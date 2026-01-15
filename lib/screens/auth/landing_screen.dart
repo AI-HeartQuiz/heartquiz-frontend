@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 // 패키지 이름을 포함한 절대 경로 방식을 사용하는 것이 관리에 더 유리합니다.
 import 'package:heartquiz/widgets/app_logo.dart';
-import 'login_screen.dart';
 
 class LandingScreen extends StatefulWidget {
   const LandingScreen({super.key});
@@ -32,10 +31,7 @@ class _LandingScreenState extends State<LandingScreen>
     // 2.5초 뒤에 로그인 화면으로 자동 이동
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
-        );
+        Navigator.pushReplacementNamed(context, '/login');
       }
     });
   }

@@ -48,7 +48,8 @@ class _FriendSelectScreenState extends State<FriendSelectScreen> {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.chevron_left, color: Color(0xFF181111), size: 30),
+          icon: const Icon(
+              Icons.chevron_left, color: Color(0xFF181111), size: 30),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
@@ -84,7 +85,8 @@ class _FriendSelectScreenState extends State<FriendSelectScreen> {
                 decoration: InputDecoration(
                   hintText: '이름으로 검색',
                   hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
-                  prefixIcon: Icon(Icons.search, color: Color(0xFF94A3B8), size: 20),
+                  prefixIcon: Icon(
+                      Icons.search, color: Color(0xFF94A3B8), size: 20),
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.symmetric(vertical: 15),
                 ),
@@ -108,7 +110,8 @@ class _FriendSelectScreenState extends State<FriendSelectScreen> {
                     ),
                   ),
                 ),
-                ..._friends.map((friend) => _buildFriendItem(friend, primaryColor)).toList(),
+                ..._friends.map((friend) =>
+                    _buildFriendItem(friend, primaryColor)).toList(),
               ],
             ),
           ),
@@ -120,7 +123,10 @@ class _FriendSelectScreenState extends State<FriendSelectScreen> {
           left: 16,
           right: 16,
           top: 10,
-          bottom: MediaQuery.of(context).padding.bottom + 16,
+          bottom: MediaQuery
+              .of(context)
+              .padding
+              .bottom + 16,
         ),
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -134,21 +140,24 @@ class _FriendSelectScreenState extends State<FriendSelectScreen> {
         ),
         child: ElevatedButton(
           onPressed: () {
+            Navigator.pushNamed(context, '/send_complete');
             // 질문 전송 로직 실행
-            _showSuccessSnackBar(context);
+            //_showSuccessSnackBar(context);
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: primaryColor,
             foregroundColor: Colors.white,
             minimumSize: const Size(double.infinity, 56),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16)),
             elevation: 8,
             shadowColor: primaryColor.withOpacity(0.4),
           ),
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('질문 보내기', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text('질문 보내기',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               SizedBox(width: 8),
               Icon(Icons.send, size: 20),
             ],
@@ -176,7 +185,8 @@ class _FriendSelectScreenState extends State<FriendSelectScreen> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? primaryColor.withOpacity(0.4) : const Color(0xFFF1F5F9),
+            color: isSelected ? primaryColor.withOpacity(0.4) : const Color(
+                0xFFF1F5F9),
             width: isSelected ? 2 : 1,
           ),
           boxShadow: [
@@ -252,16 +262,16 @@ class _FriendSelectScreenState extends State<FriendSelectScreen> {
       ),
     );
   }
-
-  void _showSuccessSnackBar(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('질문지가 성공적으로 전송되었습니다!'),
-        backgroundColor: const Color(0xFF12C49D),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
-    );
-    // 홈 화면으로 돌아가는 로직 등을 추가할 수 있습니다.
-  }
 }
+//   void _showSuccessSnackBar(BuildContext context) {
+//     ScaffoldMessenger.of(context).showSnackBar(
+//       SnackBar(
+//         content: const Text('질문지가 성공적으로 전송되었습니다!'),
+//         backgroundColor: const Color(0xFF12C49D),
+//         behavior: SnackBarBehavior.floating,
+//         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+//       ),
+//     );
+//     // 홈 화면으로 돌아가는 로직 등을 추가할 수 있습니다.
+//   }
+// }

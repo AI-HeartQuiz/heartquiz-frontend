@@ -32,7 +32,7 @@ class _QuestionLoadingScreenState extends State<QuestionLoadingScreen>
     // 로딩이 완료되면 질문 리스트 화면으로 이동
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        Navigator.pushReplacementNamed(context, '/question_list');
+        Navigator.pushReplacementNamed(context, '/question_send');
       }
     });
   }

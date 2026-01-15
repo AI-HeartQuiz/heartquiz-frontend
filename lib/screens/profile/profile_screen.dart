@@ -111,7 +111,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         onTap: (index) {
           setState(() => _currentTabIndex = index);
           if (index == 0) Navigator.pushReplacementNamed(context, '/home');
-          // '분석' 탭은 아직 구현 전이므로 유지
+          if (index == 1) Navigator.pushReplacementNamed(context, '/record');
         },
       ),
     );

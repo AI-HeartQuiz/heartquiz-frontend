@@ -21,7 +21,7 @@ class _ChatScreenState extends State<ChatScreen> {
       _messages.add({
         "isAi": false,
         "text": _controller.text,
-        "time": "오후 2:30", // 실제 시간 로직 추가 가능
+        //"time": "오후 2:30", // 실제 시간 로직 추가 가능(일단 빼고 가는걸로)
       });
       _controller.clear();
     });
@@ -79,13 +79,13 @@ class _ChatScreenState extends State<ChatScreen> {
                     message: msg['text'],
                     actionText: msg['actionText'],
                     onActionTap: () {
-                      // 질문 생성 로직 실행
+                      Navigator.pushNamed(context, '/question_loading');// 질문 생성 로직 실행
                     },
                   );
                 } else {
                   return UserMessageBubble(
                     message: msg['text'],
-                    time: msg['time'] ?? "",
+                    //time: msg['time'] ?? "",
                   );
                 }
               },

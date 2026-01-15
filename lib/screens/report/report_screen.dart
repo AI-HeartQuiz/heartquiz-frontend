@@ -88,7 +88,7 @@ class ReportScreen extends StatelessWidget {
               ),
               child: ElevatedButton(
                 onPressed: () {
-                  // 실시간 대화방으로 연결되는 로직
+                  Navigator.pushReplacementNamed(context, '/home');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
@@ -101,9 +101,7 @@ class ReportScreen extends StatelessWidget {
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.forum, size: 20),
-                    SizedBox(width: 10),
-                    Text('대화 시작하기', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text('홈으로 돌아가기', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),

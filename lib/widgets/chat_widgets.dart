@@ -151,12 +151,12 @@ class AiMessageBubble extends StatelessWidget {
 /// 2. 사용자 메시지 버블 위젯
 class UserMessageBubble extends StatelessWidget {
   final String message;
-  final String time;
+  //final String time;
 
   const UserMessageBubble({
     super.key,
     required this.message,
-    required this.time,
+    //required this.time,
   });
 
   @override
@@ -194,17 +194,17 @@ class UserMessageBubble extends StatelessWidget {
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 6, right: 4),
-                  child: Text(
-                    time,
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF9CA3AF),
-                    ),
-                  ),
-                ),
+                // Padding(
+                //   padding: const EdgeInsets.only(top: 6, right: 4),
+                //   child: Text(
+                //     time,
+                //     style: const TextStyle(
+                //       fontSize: 10,
+                //       fontWeight: FontWeight.w500,
+                //       color: Color(0xFF9CA3AF),
+                //     ),
+                //   ),
+                // ),
               ],
             ),
           ),

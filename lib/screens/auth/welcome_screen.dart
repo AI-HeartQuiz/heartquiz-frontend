@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:heartquiz/widgets/auth_widgets.dart'; // 공통 위젯 불러오기
+import 'package:heartquiz/widgets/auth_widgets.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // 1. 이전 화면(SignUpScreen)에서 보낸 데이터를 받습니다.
+    // 만약 전달된 값이 없으면 '사용자'를 기본값으로 사용합니다.
+    final String nickname = ModalRoute.of(context)?.settings.arguments as String? ?? "사용자";
+
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -33,7 +37,6 @@ class WelcomeScreen extends StatelessWidget {
                             color: Color(0xFFFF8E9E),
                           ),
                         ),
-                        // 작은 장식 하트들
                         Positioned(
                           top: -5,
                           right: -5,
@@ -47,9 +50,11 @@ class WelcomeScreen extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 40),
-                    const Text(
-                      '환영해요, 사용자님!',
-                      style: TextStyle(
+
+                    // 2. 받은 닉네임을 화면에 띄웁니다.
+                    Text(
+                      '환영해요, $nickname님!',
+                      style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF181111),
@@ -74,15 +79,11 @@ class WelcomeScreen extends StatelessWidget {
               child: PrimaryButton(
                 text: '시작하기',
                 onPressed: () {
-                  // TODO: 실제 백엔드 회원가입 API 호출 로직 (Service 호출)
-
-                  // [수정 포인트]
-                  // 기존: Navigator.pushNamed(context, '/welcome');
-                  // 변경: 홈 화면으로 바로 이동하며 이전 스택 제거
+                  // 이미 가입은 SignUpScreen에서 끝났으므로 홈으로 바로 보냅니다.
                   Navigator.pushNamedAndRemoveUntil(
                     context,
                     '/home',
-                        (route) => false, // 모든 이전 화면 스택을 제거하여 뒤로가기 방지
+                        (route) => false,
                   );
                 },
               ),
@@ -93,7 +94,6 @@ class WelcomeScreen extends StatelessWidget {
     );
   }
 
-  // 작은 하트 배지 위젯
   Widget _buildBadgeHeart(double iconSize) {
     return Container(
       padding: const EdgeInsets.all(8),

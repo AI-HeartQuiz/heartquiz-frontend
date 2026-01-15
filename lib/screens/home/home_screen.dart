@@ -76,6 +76,9 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: HomeBottomNavBar(
         currentIndex: _currentTabIndex,
         onTap: (index) {
+          if (index == 1) {
+            Navigator.pushReplacementNamed(context, '/record');
+          }
           if (index == 2) {
             Navigator.pushNamed(context, '/profile');
           } else {

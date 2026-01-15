@@ -1,12 +1,76 @@
 import 'package:flutter/material.dart';
-import 'package:heartquiz/widgets/auth_widgets.dart'; // 공통 위젯 불러오기
-import 'package:heartquiz/widgets/app_logo.dart'; // 로고 위젯 불러오기
+import 'package:provider/provider.dart';
+import 'package:heartquiz/widgets/auth_widgets.dart';
+import 'package:heartquiz/widgets/app_logo.dart';
+import 'package:heartquiz/providers/auth_provider.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  // 사용자의 입력을 관리할 컨트롤러
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  // HTML의 checkLogin() 기능을 담당하는 함수
+  Future<void> _handleLogin() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    // 1. 간단한 유효성 검사 (HTML의 alert 역할)
+    if (email.isEmpty) {
+      _showError('이메일을 입력해주세요!');
+      return;
+    }
+    if (password.isEmpty) {
+      _showError('비밀번호를 입력해주세요!');
+      return;
+    }
+
+    // 2. AuthProvider를 통한 로그인 시도
+    final authProvider = context.read<AuthProvider>();
+    final success = await authProvider.login(email, password);
+
+    if (success) {
+      // 로그인 성공 시 홈 화면으로 이동
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/home');
+      }
+    } else {
+      // 로그인 실패 시 에러 메시지 표시
+      if (mounted) {
+        _showError(authProvider.errorMessage ?? '로그인에 실패했습니다.');
+      }
+    }
+  }
+
+  // 에러 메시지를 보여주는 유틸리티 함수
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.redAccent,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // 로딩 상태 감시
+    final isLoading = context.watch<AuthProvider>().isLoading;
+
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -14,10 +78,10 @@ class LoginScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 32.0),
             child: Column(
               children: [
-                const HeartQuizLogo(size: 80), // 분리한 로고 위젯 사용
+                const HeartQuizLogo(size: 80),
                 const SizedBox(height: 24),
                 const Text(
-                  'Heart Quiz',
+                  'HeartQuiz',
                   style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                 ),
                 const Text(
@@ -26,40 +90,41 @@ class LoginScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 48),
 
-                // 공통 위젯 사용: 코드가 매우 간결해짐
-                const AuthTextField(
+                // 컨트롤러 연결
+                AuthTextField(
                   label: '이메일',
                   hint: 'example@email.com',
                   icon: Icons.mail_outline,
+                  controller: _emailController,
                 ),
                 const SizedBox(height: 16),
-                const AuthTextField(
+                AuthTextField(
                   label: '비밀번호',
                   hint: '••••••••',
                   icon: Icons.lock_outline,
                   isPassword: true,
+                  controller: _passwordController,
                 ),
 
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {},
-                    child: const Text(
-                      '비밀번호를 잊으셨나요?',
-                      style: TextStyle(color: Colors.grey, fontSize: 13),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
+                // Align(
+                //   alignment: Alignment.centerRight,
+                //   child: TextButton(
+                //     onPressed: () {
+                //       // 비밀번호 찾기 로직 (필요 시 구현)
+                //     },
+                //     child: const Text(
+                //       '비밀번호를 잊으셨나요?',
+                //       style: TextStyle(color: Colors.grey, fontSize: 13),
+                //     ),
+                //   ),
+                // ),
+                // const SizedBox(height: 24),
 
-                // 공통 버튼 사용
+                // 로딩 상태 반영
                 PrimaryButton(
                   text: '로그인',
-                  onPressed: () {
-                    // pushReplacementNamed를 사용하여 홈 화면으로 이동합니다.
-                    // 이렇게 하면 로그인을 한 뒤 '뒤로가기'를 눌러도 다시 로그인창이 나오지 않아요.
-                    Navigator.pushReplacementNamed(context, '/home');
-                  },
+                  isLoading: isLoading,
+                  onPressed: _handleLogin,
                 ),
 
                 const SizedBox(height: 32),
@@ -74,7 +139,7 @@ class LoginScreen extends StatelessWidget {
                       onPressed: () => Navigator.pushNamed(context, '/signup'),
                       child: const Text(
                         '회원가입',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF12C49D)),
                       ),
                     ),
                   ],

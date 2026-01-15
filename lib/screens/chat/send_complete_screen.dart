@@ -1,36 +1,12 @@
 import 'package:flutter/material.dart';
 
-class SendCompleteScreen extends StatefulWidget {
+class SendCompleteScreen extends StatelessWidget {
   const SendCompleteScreen({super.key});
-
-  @override
-  State<SendCompleteScreen> createState() => _SendCompleteScreenState();
-}
-
-class _SendCompleteScreenState extends State<SendCompleteScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _pulseController;
-
-  @override
-  void initState() {
-    super.initState();
-    // 체크 아이콘 주변의 펄스 애니메이션 설정
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _pulseController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     const Color primaryColor = Color(0xFF12C49D);
-    const String partnerName = "민수"; // 실제 데이터 연동 가능
+    const String partnerName = "민수";
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -38,91 +14,67 @@ class _SendCompleteScreenState extends State<SendCompleteScreen>
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        automaticallyImplyLeading: false, // 전송 완료 후에는 뒤로가기를 막는 것이 일반적
+        automaticallyImplyLeading: false, // 홈으로만 가게끔 뒤로가기 방지
         title: const Text(
           '전송 완료',
           style: TextStyle(
             color: Color(0xFF1E293B),
-            fontSize: 18,
+            fontSize: 17,
             fontWeight: FontWeight.bold,
           ),
         ),
       ),
-      body: Stack(
+      body: Column(
         children: [
-          // 중앙 콘텐츠
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // 1. 애니메이션 체크 아이콘
-                  _buildAnimatedCheck(primaryColor),
+          Expanded(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // 1. 정적 체크 아이콘 (움직임 제거)
+                    _buildStaticCheck(primaryColor),
 
-                  const SizedBox(height: 32),
+                    const SizedBox(height: 32),
 
-                  // 2. 전송 완료 메시지
-                  const Text(
-                    '전송 완료!',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1E293B),
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  RichText(
-                    textAlign: TextAlign.center,
-                    text: const TextSpan(
+                    // 2. 메시지 영역
+                    const Text(
+                      '전송 완료!',
                       style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1E293B),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      '$partnerName님에게 질문지가\n성공적으로 전달되었습니다.',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
                         fontSize: 16,
                         color: Color(0xFF64748B),
                         height: 1.5,
-                        fontFamily: 'Pretendard',
                       ),
-                      children: [
-                        TextSpan(
-                          text: partnerName,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF334155),
-                          ),
-                        ),
-                        TextSpan(text: '님에게 질문지가\n성공적으로 전달되었습니다.'),
-                      ],
                     ),
-                  ),
 
-                  const SizedBox(height: 40),
+                    const SizedBox(height: 40),
 
-                  // 3. 알림 형태의 요약 카드
-                  _buildInfoCard(primaryColor),
-                ],
+                    // 3. 정보 카드
+                    _buildInfoCard(primaryColor),
+                  ],
+                ),
               ),
             ),
           ),
 
-          // 4. 하단 홈으로 돌아가기 버튼
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              padding: EdgeInsets.only(
-                left: 20,
-                right: 20,
-                top: 20,
-                bottom: MediaQuery.of(context).padding.bottom + 20,
-              ),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                border: Border(top: BorderSide(color: Color(0xFFF8FAFC))),
-              ),
+          // 4. 하단 고정 버튼 (SafeArea 적용으로 기기별 하단 여백 대응)
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
               child: ElevatedButton(
                 onPressed: () {
-                  // 모든 스택을 비우고 홈 화면으로 이동
+                  // 히스토리를 모두 지우고 홈으로 이동
                   Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
                 },
                 style: ElevatedButton.styleFrom(
@@ -130,8 +82,7 @@ class _SendCompleteScreenState extends State<SendCompleteScreen>
                   foregroundColor: Colors.white,
                   minimumSize: const Size(double.infinity, 56),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  elevation: 8,
-                  shadowColor: primaryColor.withOpacity(0.3),
+                  elevation: 0, // 깔끔하게 그림자 제거 또는 낮춤
                 ),
                 child: const Text(
                   '홈으로 돌아가기',
@@ -145,57 +96,30 @@ class _SendCompleteScreenState extends State<SendCompleteScreen>
     );
   }
 
-  // 펄스 애니메이션이 적용된 체크 원형 위젯
-  Widget _buildAnimatedCheck(Color primaryColor) {
-    return AnimatedBuilder(
-      animation: _pulseController,
-      builder: (context, child) {
-        return Stack(
-          alignment: Alignment.center,
-          children: [
-            // 바깥쪽 블러 효과 원
-            Container(
-              width: 120 + (30 * _pulseController.value),
-              height: 120 + (30 * _pulseController.value),
-              decoration: BoxDecoration(
-                color: primaryColor.withOpacity(0.05 * (1 - _pulseController.value)),
-                shape: BoxShape.circle,
-              ),
-            ),
-            // 안쪽 펄스 원
-            Container(
-              width: 80 + (20 * _pulseController.value),
-              height: 80 + (20 * _pulseController.value),
-              decoration: BoxDecoration(
-                color: primaryColor.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-            ),
-            // 메인 체크 버튼
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: primaryColor,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: primaryColor.withOpacity(0.3),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-                border: Border.all(color: Colors.white, width: 4),
-              ),
-              child: const Icon(Icons.check, color: Colors.white, size: 40),
-            ),
-          ],
-        );
-      },
+  // 움직임 없는 정적인 체크 아이콘
+  Widget _buildStaticCheck(Color primaryColor) {
+    return Container(
+      width: 100,
+      height: 100,
+      decoration: BoxDecoration(
+        color: primaryColor.withOpacity(0.1),
+        shape: BoxShape.circle,
+      ),
+      child: Center(
+        child: Container(
+          width: 70,
+          height: 70,
+          decoration: BoxDecoration(
+            color: primaryColor,
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white, width: 3),
+          ),
+          child: const Icon(Icons.check, color: Colors.white, size: 35),
+        ),
+      ),
     );
   }
 
-  // 하단 메일 정보 카드
   Widget _buildInfoCard(Color primaryColor) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -206,43 +130,14 @@ class _SendCompleteScreenState extends State<SendCompleteScreen>
       ),
       child: Row(
         children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFFF1F5F9)),
-            ),
-            child: Icon(Icons.mail, color: primaryColor, size: 24),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      '질문지 도착',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                    ),
-                    Text(
-                      '방금 전',
-                      style: TextStyle(color: Colors.grey.shade400, fontSize: 10),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  '맞춤 질문 5개가 포함되어 있습니다.',
-                  style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
-                ),
-              ],
+          Icon(Icons.mail_outline, color: primaryColor, size: 24),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Text(
+              '맞춤 질문 5개가 포함되어 있습니다.',
+              style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
             ),
           ),
-          const SizedBox(width: 8),
         ],
       ),
     );
