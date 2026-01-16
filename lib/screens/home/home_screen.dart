@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:heartquiz/widgets/home_widgets.dart';
+import 'package:heartquiz/providers/auth_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -10,22 +12,48 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentTabIndex = 0;
-  final String _userName = "지민";
+
+  @override
+  void initState() {
+    super.initState();
+    // 화면이 로드될 때 유저 정보를 가져옵니다. (HTML의 DOMContentLoaded와 동일)
+    // WidgetsBinding을 사용하는 이유는 빌드 직후에 함수를 실행하기 위함입니다.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadUserInfo();
+    });
+  }
+
+  Future<void> _loadUserInfo() async {
+    final authProvider = context.read<AuthProvider>();
+
+    // 서버에서 닉네임 정보를 가져옵니다.
+    final success = await authProvider.fetchUserProfile();
+
+    // 만약 토큰이 만료되었거나 에러가 발생했다면 로그인 화면으로 보냅니다.
+    if (!success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(authProvider.errorMessage ?? '다시 로그인 해주세요.'))
+      );
+      Navigator.pushReplacementNamed(context, '/login');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    // Provider에서 실시간으로 닉네임을 감시합니다.
+    final userNickname = context.watch<AuthProvider>().userNickname ?? "사용자";
+
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8F8),
       body: SafeArea(
         child: Stack(
           children: [
-            // 1. 메인 콘텐츠 스크롤 영역
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 상단 헤더
+                // 서버에서 가져온 닉네임을 헤더에 넘겨줍니다.
                 HomeHeader(
-                  userName: _userName,
+                  userName: userNickname,
                   hasNotification: true,
                   onNotificationTap: () {},
                 ),
@@ -39,11 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 8),
                         const SectionTitle(title: '진행 중인 대화'),
                         const SizedBox(height: 12),
-
-                        // 대화 데이터가 없는 상태의 디자인
                         const EmptyStateView(),
-
-                        // 하단 버튼과 겹치지 않도록 여백 확보
                         const SizedBox(height: 140),
                       ],
                     ),
@@ -52,9 +76,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
 
-            // 2. 하단 고정 CTA 버튼 (네비게이션 바 위쪽 배치)
             Positioned(
-              bottom: 28, // HTML의 bottom-28 반영
+              bottom: 28,
               left: 20,
               right: 20,
               child: Center(
@@ -72,15 +95,13 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-      // 3. 하단 네비게이션 바 (홈, 분석, 내 정보)
       bottomNavigationBar: HomeBottomNavBar(
         currentIndex: _currentTabIndex,
         onTap: (index) {
           if (index == 1) {
             Navigator.pushReplacementNamed(context, '/record');
-          }
-          if (index == 2) {
-            Navigator.pushNamed(context, '/profile');
+          } else if (index == 2) {
+            Navigator.pushReplacementNamed(context, '/profile');
           } else {
             setState(() {
               _currentTabIndex = index;

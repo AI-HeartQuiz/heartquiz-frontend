@@ -44,4 +44,26 @@ class AuthService {
       rethrow;
     }
   }
+
+  Future<Map<String, dynamic>?> getUserProfile(String token) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/users/me'),
+        headers: {
+          'Authorization': 'Bearer $token', // Bearer 토큰 인증
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        // 401 Unauthorized 등 에러 발생 시
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['error']?['message'] ?? '정보를 가져오지 못했습니다.');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

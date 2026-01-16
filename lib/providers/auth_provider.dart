@@ -9,42 +9,77 @@ class AuthProvider with ChangeNotifier {
   // 내부 상태 변수들
   bool _isLoading = false;      // 로딩 중인지 여부
   String? _errorMessage;       // 에러 발생 시 메시지 저장
-  String? _accessToken;        // 로그인 성공 시 받은 토큰
-  String? _userNickname;       // 로그인한 사용자의 닉네임
+  String? _accessToken;        // 로그인/회원가입 성공 시 받은 인증 토큰
+  String? _userNickname;       // 현재 로그인한 사용자의 닉네임
 
   // 외부(Screen)에서 읽을 수 있도록 getter 제공
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   String? get userNickname => _userNickname;
+  String? get accessToken => _accessToken;
   bool get isAuthenticated => _accessToken != null; // 로그인 여부 확인
 
   // ---------------------------------------------------------
-  // 회원가입 로직
+  // 1. 내 정보 불러오기 (HTML의 myinformation 함수 역할)
+  // ---------------------------------------------------------
+  Future<bool> fetchUserProfile() async {
+    // 토큰이 없으면 요청을 보낼 수 없으므로 바로 종료합니다.
+    if (_accessToken == null) {
+      _errorMessage = "인증 토큰이 없습니다. 다시 로그인해주세요.";
+      return false;
+    }
+
+    _setLoading(true);
+    _errorMessage = null;
+
+    try {
+      // 서비스 레이어를 통해 GET /api/users/me 호출
+      final result = await _authService.getUserProfile(_accessToken!);
+
+      if (result != null) {
+        // HTML 로직 반영: 응답 구조가 { data: { nickname: ... } } 인지 { nickname: ... } 인지 확인
+        // Map에서 데이터를 꺼낼 때는 result['key'] 형식을 사용합니다.
+        final String nickname = result['data'] != null
+            ? result['data']['nickname']
+            : result['nickname'];
+
+        _userNickname = nickname;
+        return true;
+      }
+      return false;
+    } catch (e) {
+      // 네트워크 오류나 401 에러 등이 발생한 경우
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // ---------------------------------------------------------
+  // 2. 회원가입 로직
   // ---------------------------------------------------------
   Future<bool> register(String email, String password, String nickname) async {
     _setLoading(true);
     _errorMessage = null;
 
     try {
-      // 1. 요청 모델 생성
       final request = RegisterRequest(
         email: email,
         password: password,
         nickname: nickname,
       );
 
-      // 2. 서비스 호출하여 서버에 데이터 전송
       final response = await _authService.register(request);
 
       if (response != null) {
-        // 성공 시 응답 데이터 저장 (필요한 경우)
+        // 가입 성공 시 토큰과 닉네임을 즉시 저장합니다.
         _accessToken = response.accessToken;
         _userNickname = response.userNickname;
         return true;
       }
       return false;
     } catch (e) {
-      // 에러 발생 시 메시지 저장 (Exception: 문구 제거)
       _errorMessage = e.toString().replaceFirst('Exception: ', '');
       return false;
     } finally {
@@ -53,21 +88,18 @@ class AuthProvider with ChangeNotifier {
   }
 
   // ---------------------------------------------------------
-  // 로그인 로직
+  // 3. 로그인 로직
   // ---------------------------------------------------------
   Future<bool> login(String email, String password) async {
     _setLoading(true);
     _errorMessage = null;
 
     try {
-      // 1. 요청 모델 생성
       final request = LoginRequest(email: email, password: password);
-
-      // 2. 서비스 호출
       final response = await _authService.login(request);
 
       if (response != null) {
-        // 3. 성공 시 토큰과 닉네임 저장
+        // 로그인 성공 시 토큰과 닉네임을 저장합니다.
         _accessToken = response.accessToken;
         _userNickname = response.userNickname;
         return true;
@@ -82,18 +114,18 @@ class AuthProvider with ChangeNotifier {
   }
 
   // ---------------------------------------------------------
-  // 로그아웃 로직
+  // 4. 로그아웃 로직
   // ---------------------------------------------------------
   void logout() {
     _accessToken = null;
     _userNickname = null;
     _errorMessage = null;
-    notifyListeners();
+    notifyListeners(); // 상태를 초기화하고 화면에 알립니다.
   }
 
   // 내부적으로 로딩 상태를 변경하고 UI에 알리는 헬퍼 함수
   void _setLoading(bool value) {
     _isLoading = value;
-    notifyListeners(); // 이 함수가 호출되어야 화면이 다시 그려집니다.
+    notifyListeners();
   }
 }

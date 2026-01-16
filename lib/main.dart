@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:heartquiz/providers/auth_provider.dart';
+import 'package:heartquiz/providers/friend_provider.dart';
 
 import 'package:heartquiz/screens/auth/landing_screen.dart';
 import 'package:heartquiz/screens/auth/login_screen.dart';
