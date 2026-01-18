@@ -311,3 +311,104 @@ class ChatInputBar extends StatelessWidget {
     );
   }
 }
+
+/// 4. 공통 채팅 AppBar 위젯
+class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
+  final String title;
+  final VoidCallback? onBackPressed;
+
+  const ChatAppBar({super.key, required this.title, this.onBackPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      centerTitle: true,
+      leading: IconButton(
+        icon: const Icon(
+          Icons.arrow_back_ios_new,
+          color: Colors.black,
+          size: 20,
+        ),
+        onPressed: onBackPressed ?? () => Navigator.pop(context),
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(
+          color: Colors.black,
+          fontSize: 17,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+}
+
+/// 5. 채팅 메시지 리스트 위젯
+class ChatMessageList extends StatelessWidget {
+  final List<Map<String, dynamic>> messages;
+  final bool isLoading;
+
+  const ChatMessageList({
+    super.key,
+    required this.messages,
+    this.isLoading = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      padding: const EdgeInsets.all(20),
+      itemCount: messages.length,
+      itemBuilder: (context, index) {
+        final msg = messages[index];
+        if (msg['isAi']) {
+          return AiMessageBubble(
+            message: msg['text'],
+            actionText: msg['actionText'],
+            onActionTap: msg['actionText'] != null ? msg['onActionTap'] : null,
+          );
+        } else {
+          return UserMessageBubble(message: msg['text']);
+        }
+      },
+    );
+  }
+}
+
+/// 6. 채팅 하단 입력 영역 (로딩 상태 포함)
+class ChatBottomBar extends StatelessWidget {
+  final TextEditingController controller;
+  final VoidCallback onSend;
+  final bool isLoading;
+  final bool showInput;
+
+  const ChatBottomBar({
+    super.key,
+    required this.controller,
+    required this.onSend,
+    this.isLoading = false,
+    this.showInput = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        color: Colors.white,
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (!showInput) {
+      return const SizedBox.shrink();
+    }
+
+    return ChatInputBar(controller: controller, onSend: onSend);
+  }
+}

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
 
 class QuestionLoadingScreen extends StatefulWidget {
   const QuestionLoadingScreen({super.key});
@@ -23,9 +22,10 @@ class _QuestionLoadingScreenState extends State<QuestionLoadingScreen>
       duration: const Duration(seconds: 3),
     );
 
-    _progressAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _progressAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
     _controller.forward();
 
@@ -226,7 +226,7 @@ class _QuestionLoadingScreenState extends State<QuestionLoadingScreen>
                       BoxShadow(
                         color: primaryColor.withOpacity(0.3),
                         blurRadius: 8,
-                      )
+                      ),
                     ],
                   ),
                 ),

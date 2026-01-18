@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:heartquiz/providers/auth_provider.dart';
 import 'package:heartquiz/providers/friend_provider.dart';
+import 'package:heartquiz/providers/chat_session_provider.dart';
+import 'package:heartquiz/providers/notification_provider.dart';
 
 import 'package:heartquiz/screens/auth/landing_screen.dart';
 import 'package:heartquiz/screens/auth/login_screen.dart';
@@ -17,6 +19,7 @@ import 'package:heartquiz/screens/chat/question_send_screen.dart';
 import 'package:heartquiz/screens/chat/send_complete_screen.dart';
 import 'package:heartquiz/screens/report/report_screen.dart';
 import 'package:heartquiz/screens/record/record_screen.dart';
+import 'package:heartquiz/screens/notification/notification_screen.dart';
 
 void main() {
   runApp(
@@ -24,6 +27,9 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => FriendProvider()),
+        ChangeNotifierProvider(create: (_) => ChatSessionProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
       ],
       child: const HeartQuizApp(),
     ),
@@ -68,11 +74,12 @@ class HeartQuizApp extends StatelessWidget {
         '/friend_search': (context) => const FriendSearchScreen(),
         '/chat': (context) => const ChatScreen(),
         '/question_loading': (context) => const QuestionLoadingScreen(),
-        '/friend_select' : (context) => const FriendSelectScreen(),
-        '/question_send' : (context) => const QuestionSendScreen(),
-        '/send_complete' : (context) => const SendCompleteScreen(),
-        '/report' : (context) => const ReportScreen(),
-        '/record' : (context) => const RecordScreen(),
+        '/friend_select': (context) => const FriendSelectScreen(),
+        '/question_send': (context) => const QuestionSendScreen(),
+        '/send_complete': (context) => const SendCompleteScreen(),
+        '/report': (context) => const ReportScreen(),
+        '/record': (context) => const RecordScreen(),
+        '/notification': (context) => const NotificationScreen(),
       },
     );
   }

@@ -2,20 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:heartquiz/services/auth_service.dart';
 import 'package:heartquiz/models/user_model.dart';
 
+/// 인증 관련 상태 관리 및 비즈니스 로직을 담당하는 Provider 클래스
+/// AuthService를 통해 실제 API 호출을 수행하고, 화면(UI)에 상태 변화를 알립니다.
+///
+/// [관리하는 상태]
+/// - _accessToken: 로그인/회원가입 시 받은 JWT 토큰
+/// - _nickname: 현재 로그인한 사용자의 닉네임
+/// - _isLoading: API 호출 중인지 여부
+/// - _errorMessage: 에러 발생 시 에러 메시지
 class AuthProvider with ChangeNotifier {
   // AuthService 객체를 생성하여 서버 통신을 준비합니다.
   final AuthService _authService = AuthService();
 
   // 내부 상태 변수들
-  bool _isLoading = false;      // 로딩 중인지 여부
-  String? _errorMessage;       // 에러 발생 시 메시지 저장
-  String? _accessToken;        // 로그인/회원가입 성공 시 받은 인증 토큰
-  String? _userNickname;       // 현재 로그인한 사용자의 닉네임
+  bool _isLoading = false; // 로딩 중인지 여부
+  String? _errorMessage; // 에러 발생 시 메시지 저장
+  String? _accessToken; // 로그인/회원가입 성공 시 받은 인증 토큰
+  String? _nickname; // 현재 로그인한 사용자의 닉네임
 
   // 외부(Screen)에서 읽을 수 있도록 getter 제공
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
-  String? get userNickname => _userNickname;
+  String? get nickname => _nickname;
   String? get accessToken => _accessToken;
   bool get isAuthenticated => _accessToken != null; // 로그인 여부 확인
 
@@ -43,7 +51,7 @@ class AuthProvider with ChangeNotifier {
             ? result['data']['nickname']
             : result['nickname'];
 
-        _userNickname = nickname;
+        _nickname = nickname;
         return true;
       }
       return false;
@@ -75,7 +83,7 @@ class AuthProvider with ChangeNotifier {
       if (response != null) {
         // 가입 성공 시 토큰과 닉네임을 즉시 저장합니다.
         _accessToken = response.accessToken;
-        _userNickname = response.userNickname;
+        _nickname = response.nickname;
         return true;
       }
       return false;
@@ -101,7 +109,7 @@ class AuthProvider with ChangeNotifier {
       if (response != null) {
         // 로그인 성공 시 토큰과 닉네임을 저장합니다.
         _accessToken = response.accessToken;
-        _userNickname = response.userNickname;
+        _nickname = response.nickname;
         return true;
       }
       return false;
@@ -118,7 +126,7 @@ class AuthProvider with ChangeNotifier {
   // ---------------------------------------------------------
   void logout() {
     _accessToken = null;
-    _userNickname = null;
+    _nickname = null;
     _errorMessage = null;
     notifyListeners(); // 상태를 초기화하고 화면에 알립니다.
   }

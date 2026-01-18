@@ -64,7 +64,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: Column(
                           children: [
                             ProfileAvatar(
-                              name: authProvider.userNickname ?? '사용자',
+                              name: authProvider.nickname ?? '사용자',
                               bio: '매일매일 조금씩 성장하는 중 🌱',
                               onEditTap: () {},
                             ),

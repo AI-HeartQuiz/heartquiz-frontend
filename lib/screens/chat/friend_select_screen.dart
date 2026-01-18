@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:heartquiz/providers/friend_provider.dart';
+import 'package:heartquiz/providers/auth_provider.dart';
+import 'package:heartquiz/providers/chat_session_provider.dart';
+import 'package:heartquiz/models/friend_model.dart';
 
 class FriendSelectScreen extends StatefulWidget {
   const FriendSelectScreen({super.key});
@@ -8,33 +13,65 @@ class FriendSelectScreen extends StatefulWidget {
 }
 
 class _FriendSelectScreenState extends State<FriendSelectScreen> {
-  // 현재 선택된 친구의 ID (기본값으로 '민수' 선택)
-  String _selectedFriendId = "minsoo@heartquiz.com";
+  String? _selectedFriendEmail;
+  final TextEditingController _searchController = TextEditingController();
 
-  // 가상 친구 데이터 목록
-  final List<Map<String, dynamic>> _friends = [
-    {
-      "name": "민수",
-      "email": "minsoo@heartquiz.com",
-      "icon": Icons.face_6,
-      "color": Colors.blue.shade100,
-      "iconColor": Colors.blue,
-    },
-    {
-      "name": "지수",
-      "email": "jisu@heartquiz.com",
-      "icon": Icons.face_3,
-      "color": Colors.orange.shade100,
-      "iconColor": Colors.orange,
-    },
-    {
-      "name": "희진",
-      "email": "heejin@heartquiz.com",
-      "icon": Icons.face_4,
-      "color": Colors.purple.shade100,
-      "iconColor": Colors.purple,
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadFriends();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadFriends() async {
+    final friendProvider = context.read<FriendProvider>();
+    final authProvider = context.read<AuthProvider>();
+    final token = authProvider.accessToken;
+
+    if (token != null) {
+      await friendProvider.fetchFriends(token);
+    }
+  }
+
+  Future<void> _sendQuestions() async {
+    if (_selectedFriendEmail == null) {
+      _showError('친구를 선택해주세요.');
+      return;
+    }
+
+    final chatProvider = context.read<ChatSessionProvider>();
+    final authProvider = context.read<AuthProvider>();
+    final token = authProvider.accessToken;
+
+    if (token == null) {
+      _showError('로그인이 필요합니다.');
+      return;
+    }
+
+    final success = await chatProvider.sendQuestionsToFriend(
+      _selectedFriendEmail!,
+      token,
+    );
+
+    if (success && mounted) {
+      Navigator.pushNamed(context, '/send_complete');
+    } else if (mounted) {
+      _showError(chatProvider.errorMessage ?? '질문지 전송에 실패했습니다.');
+    }
+  }
+
+  void _showError(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), backgroundColor: Colors.redAccent),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +86,10 @@ class _FriendSelectScreenState extends State<FriendSelectScreen> {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(
-              Icons.chevron_left, color: Color(0xFF181111), size: 30),
+            Icons.chevron_left,
+            color: Color(0xFF181111),
+            size: 30,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
@@ -81,12 +121,20 @@ class _FriendSelectScreenState extends State<FriendSelectScreen> {
                   ),
                 ],
               ),
-              child: const TextField(
-                decoration: InputDecoration(
+              child: TextField(
+                controller: _searchController,
+                onChanged: (value) {
+                  // 검색 기능은 추후 구현 가능
+                  setState(() {});
+                },
+                decoration: const InputDecoration(
                   hintText: '이름으로 검색',
                   hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
                   prefixIcon: Icon(
-                      Icons.search, color: Color(0xFF94A3B8), size: 20),
+                    Icons.search,
+                    color: Color(0xFF94A3B8),
+                    size: 20,
+                  ),
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.symmetric(vertical: 15),
                 ),
@@ -96,23 +144,61 @@ class _FriendSelectScreenState extends State<FriendSelectScreen> {
 
           // 2. 친구 목록 영역
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                const Padding(
-                  padding: EdgeInsets.only(left: 4, bottom: 12),
-                  child: Text(
-                    '내 친구 목록',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF64748B),
+            child: Consumer<FriendProvider>(
+              builder: (context, friendProvider, child) {
+                if (friendProvider.isLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                final friends = friendProvider.myFriends;
+                final searchText = _searchController.text.toLowerCase();
+                final filteredFriends = searchText.isEmpty
+                    ? friends
+                    : friends
+                          .where(
+                            (friend) =>
+                                friend.nickname.toLowerCase().contains(
+                                  searchText,
+                                ) ||
+                                friend.email.toLowerCase().contains(searchText),
+                          )
+                          .toList();
+
+                if (filteredFriends.isEmpty) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(40.0),
+                      child: Text(
+                        searchText.isEmpty ? '친구 목록이 비어있습니다.' : '검색 결과가 없습니다.',
+                        style: const TextStyle(
+                          color: Color(0xFF94A3B8),
+                          fontSize: 14,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                ..._friends.map((friend) =>
-                    _buildFriendItem(friend, primaryColor)).toList(),
-              ],
+                  );
+                }
+
+                return ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.only(left: 4, bottom: 12),
+                      child: Text(
+                        '내 친구 목록',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF64748B),
+                        ),
+                      ),
+                    ),
+                    ...filteredFriends
+                        .map((friend) => _buildFriendItem(friend, primaryColor))
+                        .toList(),
+                  ],
+                );
+              },
             ),
           ),
         ],
@@ -123,44 +209,51 @@ class _FriendSelectScreenState extends State<FriendSelectScreen> {
           left: 16,
           right: 16,
           top: 10,
-          bottom: MediaQuery
-              .of(context)
-              .padding
-              .bottom + 16,
+          bottom: MediaQuery.of(context).padding.bottom + 16,
         ),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              bgColor.withOpacity(0.0),
-              bgColor,
-            ],
+            colors: [bgColor.withOpacity(0.0), bgColor],
           ),
         ),
-        child: ElevatedButton(
-          onPressed: () {
-            Navigator.pushNamed(context, '/send_complete');
-            // 질문 전송 로직 실행
-            //_showSuccessSnackBar(context);
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: primaryColor,
-            foregroundColor: Colors.white,
-            minimumSize: const Size(double.infinity, 56),
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16)),
-            elevation: 8,
-            shadowColor: primaryColor.withOpacity(0.4),
-          ),
-          child: const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('질문 보내기',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              SizedBox(width: 8),
-              Icon(Icons.send, size: 20),
-            ],
+        child: Consumer<ChatSessionProvider>(
+          builder: (context, chatProvider, child) => ElevatedButton(
+            onPressed: chatProvider.isLoading ? null : _sendQuestions,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryColor,
+              foregroundColor: Colors.white,
+              minimumSize: const Size(double.infinity, 56),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              elevation: 8,
+              shadowColor: primaryColor.withOpacity(0.4),
+            ),
+            child: chatProvider.isLoading
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '질문 보내기',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Icon(Icons.send, size: 20),
+                    ],
+                  ),
           ),
         ),
       ),
@@ -168,13 +261,26 @@ class _FriendSelectScreenState extends State<FriendSelectScreen> {
   }
 
   // 각 친구 항목 카드 위젯
-  Widget _buildFriendItem(Map<String, dynamic> friend, Color primaryColor) {
-    bool isSelected = _selectedFriendId == friend['email'];
+  Widget _buildFriendItem(UserSearchResult friend, Color primaryColor) {
+    bool isSelected = _selectedFriendEmail == friend.email;
+    // 닉네임 첫 글자로 아이콘 색상 결정
+    final colorIndex = friend.nickname.codeUnits.fold(0, (a, b) => a + b) % 7;
+    final colors = [
+      Colors.blue,
+      Colors.orange,
+      Colors.purple,
+      Colors.green,
+      Colors.pink,
+      Colors.teal,
+      Colors.indigo,
+    ];
+    final iconColor = colors[colorIndex];
+    final backgroundColor = iconColor.shade100;
 
     return GestureDetector(
       onTap: () {
         setState(() {
-          _selectedFriendId = friend['email'];
+          _selectedFriendEmail = friend.email;
         });
       },
       child: AnimatedContainer(
@@ -185,8 +291,9 @@ class _FriendSelectScreenState extends State<FriendSelectScreen> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? primaryColor.withOpacity(0.4) : const Color(
-                0xFFF1F5F9),
+            color: isSelected
+                ? primaryColor.withOpacity(0.4)
+                : const Color(0xFFF1F5F9),
             width: isSelected ? 2 : 1,
           ),
           boxShadow: [
@@ -211,10 +318,10 @@ class _FriendSelectScreenState extends State<FriendSelectScreen> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: friend['color'],
+                color: backgroundColor,
                 shape: BoxShape.circle,
               ),
-              child: Icon(friend['icon'], color: friend['iconColor'], size: 28),
+              child: Icon(Icons.person, color: iconColor, size: 28),
             ),
             const SizedBox(width: 16),
             // 정보 (이름, 이메일)
@@ -223,7 +330,7 @@ class _FriendSelectScreenState extends State<FriendSelectScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    friend['name'],
+                    friend.nickname,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -232,7 +339,7 @@ class _FriendSelectScreenState extends State<FriendSelectScreen> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    friend['email'],
+                    friend.email,
                     style: const TextStyle(
                       fontSize: 12,
                       color: Color(0xFF64748B),

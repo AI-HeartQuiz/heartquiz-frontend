@@ -20,17 +20,14 @@ class RegisterRequest {
 // 회원가입 성공 시 받을 응답 모델
 class AuthResponse {
   final String accessToken;
-  final String userNickname;
+  final String nickname;
 
-  AuthResponse({
-    required this.accessToken,
-    required this.userNickname,
-  });
+  AuthResponse({required this.accessToken, required this.nickname});
   //factory AuthResponse.fromJson() : 서버가 준 복잡한 JSON 데이터를 우리가 쓰기 편한 Dart 객체로 조립해주는 역할
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
     return AuthResponse(
       accessToken: json['data']['accessToken'],
-      userNickname: json['data']['userNickname'],
+      nickname: json['data']['nickname'],
     );
   }
 }
@@ -40,13 +37,7 @@ class LoginRequest {
   final String email;
   final String password;
 
-  LoginRequest({
-    required this.email,
-    required this.password,
-  });
+  LoginRequest({required this.email, required this.password});
 
-  Map<String, dynamic> toJson() => {
-    'email': email,
-    'password': password,
-  };
+  Map<String, dynamic> toJson() => {'email': email, 'password': password};
 }

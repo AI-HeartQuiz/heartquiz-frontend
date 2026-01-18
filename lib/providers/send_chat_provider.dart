@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// 백엔드 및 AI 연동 상태를 관리하는 클래스입니다.
-class ChatProvider with ChangeNotifier {
+class SendChatProvider with ChangeNotifier {
   // 전송 중인지 상태를 관리합니다.
   bool _isSending = false;
   bool get isSending => _isSending;

@@ -313,3 +313,112 @@ class SectionTitle extends StatelessWidget {
     );
   }
 }
+
+/// 7. 퀴즈 세션 카드 위젯 (홈 화면용)
+class QuizSessionCard extends StatelessWidget {
+  final String sessionId;
+  final String partnerNickname;
+  final String status;
+  final VoidCallback onTap;
+
+  const QuizSessionCard({
+    super.key,
+    required this.sessionId,
+    required this.partnerNickname,
+    required this.status,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isOngoing = status == '진행 중' || status == 'ongoing';
+    
+    // 닉네임 첫 글자로 아이콘 색상 결정
+    final colorIndex = partnerNickname.codeUnits.fold(0, (a, b) => a + b) % 7;
+    final colors = [
+      Colors.blue,
+      Colors.orange,
+      Colors.purple,
+      Colors.green,
+      Colors.pink,
+      Colors.teal,
+      Colors.indigo,
+    ];
+    final iconColor = colors[colorIndex];
+    final backgroundColor = iconColor.shade100;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFFF9FAFB)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: backgroundColor,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.person, color: iconColor, size: 32),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        partnerNickname,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF111111),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: isOngoing
+                              ? const Color(0xFF12C49D).withOpacity(0.1)
+                              : const Color(0xFFF3F4F6),
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        child: Text(
+                          isOngoing ? '진행 중' : '완료됨',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: isOngoing
+                                ? const Color(0xFF12C49D)
+                                : const Color(0xFF6B7280),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, color: Color(0xFFD1D5DB), size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+}

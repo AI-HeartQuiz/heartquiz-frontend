@@ -1,0 +1,48 @@
+/// 리포트 데이터 모델
+class ReportModel {
+  // 속마음 데이터
+  final String aThought;
+  final String bThought;
+
+  // AI 중재 메시지
+  final String mediationTitle; // 공통 타이틀
+  final String aDetailForB; // A의 자세한 입장 (B에게 보여줄 내용)
+  final String bDetailForA; // B의 자세한 입장 (A에게 보여줄 내용)
+
+  // 공통 팁
+  final List<String> conversationTips;
+
+  // 파트너 닉네임 (선택적)
+  final String? partnerNickname;
+
+  ReportModel({
+    required this.aThought,
+    required this.bThought,
+    required this.mediationTitle,
+    required this.aDetailForB,
+    required this.bDetailForA,
+    required this.conversationTips,
+    this.partnerNickname,
+  });
+
+  factory ReportModel.fromJson(Map<String, dynamic> json) {
+    return ReportModel(
+      aThought: json['a_thought'] ?? '',
+      bThought: json['b_thought'] ?? '',
+      mediationTitle: json['mediation_title'] ?? '',
+      aDetailForB: json['a_detail_for_b'] ?? '',
+      bDetailForA: json['b_detail_for_a'] ?? '',
+      conversationTips: List<String>.from(json['conversation_tips'] ?? []),
+      partnerNickname: json['partner_nickname'],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'a_thought': aThought,
+    'b_thought': bThought,
+    'mediation_title': mediationTitle,
+    'a_detail_for_b': aDetailForB,
+    'b_detail_for_a': bDetailForA,
+    'conversation_tips': conversationTips,
+  };
+}

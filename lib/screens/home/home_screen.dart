@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:heartquiz/widgets/home_widgets.dart';
 import 'package:heartquiz/providers/auth_provider.dart';
+import 'package:heartquiz/providers/chat_session_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,10 +17,10 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // 화면이 로드될 때 유저 정보를 가져옵니다. (HTML의 DOMContentLoaded와 동일)
-    // WidgetsBinding을 사용하는 이유는 빌드 직후에 함수를 실행하기 위함입니다.
+    // 화면이 로드될 때 유저 정보와 세션 목록을 가져옵니다.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadUserInfo();
+      _loadSessions();
     });
   }
 
@@ -32,16 +33,47 @@ class _HomeScreenState extends State<HomeScreen> {
     // 만약 토큰이 만료되었거나 에러가 발생했다면 로그인 화면으로 보냅니다.
     if (!success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(authProvider.errorMessage ?? '다시 로그인 해주세요.'))
+        SnackBar(content: Text(authProvider.errorMessage ?? '다시 로그인 해주세요.')),
       );
       Navigator.pushReplacementNamed(context, '/login');
+    }
+  }
+
+  Future<void> _loadSessions() async {
+    final chatProvider = context.read<ChatSessionProvider>();
+    final authProvider = context.read<AuthProvider>();
+    final token = authProvider.accessToken;
+
+    if (token != null) {
+      await chatProvider.fetchQuizSessions(token);
+    }
+  }
+
+  Future<void> _handleSessionTap(String sessionId, bool isCompleted) async {
+    if (!isCompleted) {
+      // 진행 중인 세션은 아직 리포트를 볼 수 없음
+      return;
+    }
+
+    final chatProvider = context.read<ChatSessionProvider>();
+    final authProvider = context.read<AuthProvider>();
+    final token = authProvider.accessToken;
+
+    if (token == null) return;
+
+    // 세션 ID를 설정하고 리포트를 생성
+    chatProvider.setSessionId(sessionId);
+    final report = await chatProvider.generateReport(token);
+
+    if (report != null && mounted) {
+      Navigator.pushNamed(context, '/report');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     // Provider에서 실시간으로 닉네임을 감시합니다.
-    final userNickname = context.watch<AuthProvider>().userNickname ?? "사용자";
+    final nickname = context.watch<AuthProvider>().nickname ?? "사용자";
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8F8),
@@ -53,24 +85,65 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 // 서버에서 가져온 닉네임을 헤더에 넘겨줍니다.
                 HomeHeader(
-                  userName: userNickname,
+                  userName: nickname,
                   hasNotification: true,
-                  onNotificationTap: () {},
+                  onNotificationTap: () {
+                    Navigator.pushNamed(context, '/notification');
+                  },
                 ),
 
                 Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 8),
-                        const SectionTitle(title: '진행 중인 대화'),
-                        const SizedBox(height: 12),
-                        const EmptyStateView(),
-                        const SizedBox(height: 140),
-                      ],
-                    ),
+                  child: Consumer<ChatSessionProvider>(
+                    builder: (context, chatProvider, child) {
+                      final sessions = chatProvider.quizSessions;
+
+                      if (chatProvider.isLoading) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      if (sessions.isEmpty) {
+                        return SingleChildScrollView(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 8),
+                              const SectionTitle(title: '진행 중인 대화'),
+                              const SizedBox(height: 12),
+                              const EmptyStateView(),
+                              const SizedBox(height: 140),
+                            ],
+                          ),
+                        );
+                      }
+
+                      return RefreshIndicator(
+                        onRefresh: _loadSessions,
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 8),
+                              const SectionTitle(title: '진행 중인 대화'),
+                              const SizedBox(height: 12),
+                              ...sessions.map(
+                                (session) => QuizSessionCard(
+                                  sessionId: session.sessionId,
+                                  partnerNickname: session.partnerNickname,
+                                  status: session.statusKorean,
+                                  onTap: () => _handleSessionTap(
+                                    session.sessionId,
+                                    session.isCompleted,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 140),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ],
