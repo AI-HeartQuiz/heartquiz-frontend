@@ -4,8 +4,8 @@ import 'package:heartquiz/models/friend_model.dart';
 
 class FriendService {
   // IP 주소는 본인 환경에 맞게 유지
-  final String baseUrl = 'http://172.16.96.200:8080/api/friends';
-  final String searchUrl = 'http://172.16.96.200:8080/api/auth/search';
+  final String baseUrl = 'http://10.0.2.2:8080/api/friends';
+  final String searchUrl = 'http://10.0.2.2:8080/api/auth/search';
 
   // 1. 유저 검색 (검색 결과에 ID가 포함되어야 함)
   Future<List<UserSearchResult>> searchUser(

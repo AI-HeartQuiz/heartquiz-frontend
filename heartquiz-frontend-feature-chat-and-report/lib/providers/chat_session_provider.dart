@@ -19,6 +19,7 @@ import 'package:heartquiz/services/quiz_service.dart';
 /// - _errorMessage: 에러 발생 시 에러 메시지
 class ChatSessionProvider with ChangeNotifier {
   final QuizService _quizService = QuizService();
+
   // A의 초기 상황
   String? _situationText;
 
@@ -152,11 +153,20 @@ class ChatSessionProvider with ChangeNotifier {
       return null;
     }
 
+    // 1. 세션 ID가 없으면(첫 질문이면) 생성
+    if (_sessionId == null) {
+      // 타임스탬프 기반 ID 생성 (백엔드와 협의된 방식 사용)
+      _sessionId = DateTime.now().millisecondsSinceEpoch.toString();
+      notifyListeners();
+    }
+
     setLoading(true);
     _errorMessage = null;
 
     try {
+      // 2. 수정된 QuizService 호출 (sessionId 필수)
       final question = await _quizService.generateFollowUpQuestion(
+        _sessionId!, // ✅ 수정됨: sessionid -> _sessionId!
         _situationText,
         _followUpPairs,
         token,
@@ -210,16 +220,19 @@ class ChatSessionProvider with ChangeNotifier {
       return null;
     }
 
-    // 세션 ID 생성 (UUID 또는 타임스탬프 기반)
-    final sessionId = DateTime.now().millisecondsSinceEpoch.toString();
-    setSessionId(sessionId);
+    // ✅ 수정됨: 꼬리질문 때 만든 세션 ID를 그대로 사용해야 합니다.
+    // 만약 세션 ID가 없다면(예외 상황) 새로 생성
+    if (_sessionId == null) {
+      _sessionId = DateTime.now().millisecondsSinceEpoch.toString();
+      notifyListeners();
+    }
 
     setLoading(true);
     _errorMessage = null;
 
     try {
       final response = await _quizService.generateQuestions(
-        sessionId,
+        _sessionId!, // ✅ 수정됨: 기존 세션 ID 사용
         nickname,
         _situationText!,
         _followUpPairs,
@@ -227,6 +240,7 @@ class ChatSessionProvider with ChangeNotifier {
       );
 
       if (response != null) {
+        setSessionId(response.sessionId);
         setBQuestions(response.questions);
         setLoading(false);
         return response;

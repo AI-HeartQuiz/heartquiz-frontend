@@ -5,7 +5,7 @@ import 'package:heartquiz/models/notification_model.dart';
 /// 알림 관련 API 호출을 담당하는 서비스 클래스
 /// 백엔드와의 실제 HTTP 통신을 처리합니다.
 class NotificationService {
-  final String baseUrl = 'http://172.16.96.200:8080/api';
+  final String baseUrl = 'http://10.0.2.2:8080/api';
 
   /// 알림 목록 조회 API 호출
   ///
