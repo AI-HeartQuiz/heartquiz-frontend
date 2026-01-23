@@ -115,16 +115,49 @@ class FriendSearchResultCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFFE0F7FA), Color(0xFFB2EBF2)],
-              ),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.face_rounded, color: Color(0xFF60A5FA), size: 36),
+          // 리포트 스타일: 닉네임 기반으로 배경색과 아이콘 색상 결정
+          Builder(
+            builder: (context) {
+              final colorIndex = name.codeUnits.fold(0, (a, b) => a + b) % 7;
+              final colors = [
+                const Color(0xFFE8F5E9), // 초록
+                const Color(0xFFE3F2FD), // 파랑
+                const Color(0xFFF3E5F5), // 보라
+                const Color(0xFFFFE0B2), // 주황
+                const Color(0xFFE0F2F1), // 청록
+                const Color(0xFFE1F5FE), // 하늘
+                const Color(0xFFEDE7F6), // 연보라
+              ];
+              final iconColors = [
+                const Color(0xFF12C49D).withOpacity(0.6), // 초록
+                Colors.blue.shade300, // 파랑
+                Colors.purple.shade300, // 보라
+                Colors.orange.shade300, // 주황
+                Colors.teal.shade300, // 청록
+                Colors.cyan.shade300, // 하늘
+                Colors.indigo.shade300, // 연보라
+              ];
+              final bgColor = colors[colorIndex];
+              final iconColor = iconColors[colorIndex];
+
+              return Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: bgColor,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Icon(Icons.person, color: iconColor, size: 36),
+              );
+            },
           ),
           const SizedBox(width: 16),
           Expanded(

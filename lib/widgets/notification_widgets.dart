@@ -40,7 +40,7 @@ class NotificationCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // 아바타
+            // 아바타 (리포트 스타일)
             Container(
               width: 48,
               height: 48,
@@ -48,19 +48,19 @@ class NotificationCard extends StatelessWidget {
                 color: avatarColor,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: const Color(0xFFF6F8F8),
+                  color: Colors.white,
                   width: 2,
                 ),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.05),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
               child: Icon(
-                Icons.face_3,
+                Icons.person,
                 color: iconColor,
                 size: 28,
               ),

@@ -261,28 +261,37 @@ class ConversationTipsSection extends StatelessWidget {
 
     const Color primaryColor = Color(0xFF12C49D);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 32),
-        const Row(
-          children: [
-            Icon(Icons.chat_bubble, color: primaryColor, size: 20),
-            SizedBox(width: 8),
-            Text(
-              '함께 이야기해볼까요?',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        ...tips.map(
-          (tip) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: _ConversationTipCard(tip: tip),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 40),
+          // 섹션 제목
+          Row(
+            children: [
+              const Icon(Icons.chat_bubble, color: primaryColor, size: 20),
+              const SizedBox(width: 8),
+              const Text(
+                '함께 이야기해볼까요?',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF0D121B),
+                ),
+              ),
+            ],
           ),
-        ),
-      ],
+          const SizedBox(height: 16),
+          // 팁 카드 리스트
+          ...tips.map(
+            (tip) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _ConversationTipCard(tip: tip),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -295,30 +304,25 @@ class _ConversationTipCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const Color primaryColor = Color(0xFF12C49D);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: const Color(0xFFF0FDF9),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF12C49D).withOpacity(0.1)),
+        border: Border.all(color: primaryColor.withOpacity(0.1)),
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              tip,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF334155),
-                height: 1.5,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          const Icon(Icons.chevron_right, color: Color(0xFF12C49D)),
-        ],
+      child: Text(
+        tip,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: Color(0xFF1F2937), // gray-800
+          height: 1.6, // leading-relaxed
+        ),
+        textAlign: TextAlign.left,
       ),
     );
   }
