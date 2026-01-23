@@ -49,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _handleSessionTap(String sessionId, bool isCompleted) async {
+  Future<void> _handleSessionTap(int sessionId, bool isCompleted) async {
     if (!isCompleted) {
       // 진행 중인 세션은 아직 리포트를 볼 수 없음
       return;

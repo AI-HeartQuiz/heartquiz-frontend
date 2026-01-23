@@ -26,7 +26,7 @@ class ChatSessionProvider with ChangeNotifier {
   List<FollowUpPair> _followUpPairs = [];
 
   // 현재 세션 ID
-  String? _sessionId;
+  int? _sessionId;
 
   // B에게 전달될 질문 5개
   List<String> _bQuestions = [];
@@ -47,7 +47,7 @@ class ChatSessionProvider with ChangeNotifier {
   // Getters
   String? get situationText => _situationText;
   List<FollowUpPair> get followUpPairs => _followUpPairs;
-  String? get sessionId => _sessionId;
+  int? get sessionId => _sessionId;
   List<String> get bQuestions => _bQuestions;
   List<BAnswer> get bAnswers => _bAnswers;
   ReportModel? get reportData => _reportData;
@@ -86,7 +86,7 @@ class ChatSessionProvider with ChangeNotifier {
   }
 
   /// 세션 ID 설정
-  void setSessionId(String id) {
+  void setSessionId(int id) {
     _sessionId = id;
     notifyListeners();
   }
@@ -210,8 +210,8 @@ class ChatSessionProvider with ChangeNotifier {
       return null;
     }
 
-    // 세션 ID 생성 (UUID 또는 타임스탬프 기반)
-    final sessionId = DateTime.now().millisecondsSinceEpoch.toString();
+    // 세션 ID 생성 (타임스탬프 기반)
+    final sessionId = DateTime.now().millisecondsSinceEpoch;
     setSessionId(sessionId);
 
     setLoading(true);
@@ -245,20 +245,20 @@ class ChatSessionProvider with ChangeNotifier {
   /// 질문지를 친구에게 전송하는 함수
   ///
   /// [내부 동작]
-  /// 1. 세션 ID와 친구 이메일이 유효한지 검증
+  /// 1. 세션 ID와 친구 ID가 유효한지 검증
   /// 2. QuizService가 POST /api/quiz/send API를 호출하여 질문지를 친구에게 전송
   ///
   /// [사용 시점] 사용자 A가 질문지를 생성한 후 친구 선택 화면에서 전송할 때
   ///
   /// [반환값] 성공 시 true, 실패 시 false (에러 메시지는 _errorMessage에 저장됨)
-  Future<bool> sendQuestionsToFriend(String friendEmail, String token) async {
+  Future<bool> sendQuestionsToFriend(int friendId, String token) async {
     if (_sessionId == null) {
       _errorMessage = '질문지 세션이 없습니다. 다시 질문지를 생성해주세요.';
       notifyListeners();
       return false;
     }
 
-    if (friendEmail.isEmpty) {
+    if (friendId <= 0) {
       _errorMessage = '친구를 선택해주세요.';
       notifyListeners();
       return false;
@@ -270,7 +270,7 @@ class ChatSessionProvider with ChangeNotifier {
     try {
       final success = await _quizService.sendQuestionsToFriend(
         _sessionId!,
-        friendEmail,
+        friendId,
         token,
       );
 
@@ -292,11 +292,8 @@ class ChatSessionProvider with ChangeNotifier {
   /// [사용 시점] 사용자 B가 알림을 통해 질문지를 받았을 때, 질문 목록을 불러올 때
   ///
   /// [반환값] BQuestionsResponse (session_id와 questions 포함), 실패 시 null
-  Future<BQuestionsResponse?> getBQuestions(
-    String sessionId,
-    String token,
-  ) async {
-    if (sessionId.isEmpty || token.isEmpty) {
+  Future<BQuestionsResponse?> getBQuestions(int sessionId, String token) async {
+    if (sessionId <= 0 || token.isEmpty) {
       _errorMessage = '로그인이 필요합니다.';
       notifyListeners();
       return null;

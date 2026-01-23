@@ -14,7 +14,7 @@ class FollowUpPair {
 
 /// AI 세션 상태를 관리하는 모델
 class AiChatSession {
-  final String sessionId;
+  final int sessionId;
   final String userAId;
   final String situationText;
   final List<FollowUpPair> followupQa;
@@ -37,14 +37,14 @@ class AiChatSession {
 
 /// API 3.2 응답: B가 답할 질문 리스트 모델
 class BQuestionsResponse {
-  final String sessionId;
+  final int sessionId;
   final List<String> questions;
 
   BQuestionsResponse({required this.sessionId, required this.questions});
 
   factory BQuestionsResponse.fromJson(Map<String, dynamic> json) {
     return BQuestionsResponse(
-      sessionId: json['session_id'],
+      sessionId: json['session_id'] ?? 0,
       questions: List<String>.from(json['questions']),
     );
   }
@@ -66,7 +66,7 @@ class BAnswer {
 
 /// B의 모든 답변을 담는 모델
 class BAnswersRequest {
-  final String sessionId;
+  final int sessionId;
   final List<BAnswer> answers;
 
   BAnswersRequest({required this.sessionId, required this.answers});

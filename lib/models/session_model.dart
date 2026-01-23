@@ -1,6 +1,6 @@
 /// 퀴즈 세션 목록 아이템 모델 (홈 화면용)
 class QuizSessionItem {
-  final String sessionId;
+  final int sessionId;
   final String partnerNickname; // 상대방 닉네임
   final String status; // '진행 중' 또는 '완료됨'
   // final String? title; // 선택적: 대화 제목/주제
@@ -20,7 +20,7 @@ class QuizSessionItem {
 
   factory QuizSessionItem.fromJson(Map<String, dynamic> json) {
     return QuizSessionItem(
-      sessionId: json['session_id'] ?? '',
+      sessionId: json['session_id'] ?? 0,
       partnerNickname: json['partner_nickname'] ?? '상대방',
       status: json['status'] ?? '진행 중', // 'ongoing' 또는 'completed'
       // title: json['title'],

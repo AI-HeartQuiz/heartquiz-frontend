@@ -19,17 +19,19 @@ class NotificationProvider with ChangeNotifier {
   bool get hasUnreadNotifications => _unreadCount > 0;
 
   /// 알림 목록 가져오기 함수
-  /// 
+  ///
   /// [내부 동작]
   /// 1. NotificationService가 GET /api/notifications API를 호출하여 알림 목록 조회
   /// 2. 받은 알림 목록을 _notifications에 저장
   /// 3. 읽지 않은 알림 개수를 계산하여 _unreadCount에 저장
-  /// 
+  ///
   /// [사용 시점] 알림 화면에서 알림 목록을 표시할 때
   Future<void> fetchNotifications(String token) async {
     _isLoading = true;
     _errorMessage = null;
-    notifyListeners();
+    // 초기 로딩 상태 설정 시에는 notifyListeners() 호출하지 않음
+    // (앱 초기화 시점에 위젯 트리가 완전히 빌드되지 않았을 수 있음)
+    // 최종 결과는 finally 블록에서 한 번만 알림
 
     try {
       _notifications = await _notificationService.getNotifications(token);
@@ -40,23 +42,26 @@ class NotificationProvider with ChangeNotifier {
       _unreadCount = 0;
     } finally {
       _isLoading = false;
-      notifyListeners();
+      notifyListeners(); // 최종 상태 변경 시에만 UI 업데이트
     }
   }
 
   /// 알림 읽음 처리 함수
-  /// 
+  ///
   /// [내부 동작]
   /// 1. NotificationService가 PATCH /api/notifications/{notificationId}/read API를 호출
   /// 2. 성공 시 로컬 _notifications 리스트에서 해당 알림의 isRead를 true로 업데이트
   /// 3. 읽지 않은 알림 개수를 재계산하여 _unreadCount 업데이트
-  /// 
+  ///
   /// [사용 시점] 사용자가 알림을 클릭했을 때 자동으로 호출되어 읽음 처리
-  /// 
+  ///
   /// [반환값] 성공 시 true, 실패 시 false
   Future<bool> markAsRead(String notificationId, String token) async {
     try {
-      final success = await _notificationService.markAsRead(notificationId, token);
+      final success = await _notificationService.markAsRead(
+        notificationId,
+        token,
+      );
       if (success) {
         final index = _notifications.indexWhere((n) => n.id == notificationId);
         if (index >= 0) {
@@ -84,30 +89,34 @@ class NotificationProvider with ChangeNotifier {
   }
 
   /// 모든 알림 읽음 처리 함수
-  /// 
+  ///
   /// [내부 동작]
   /// 1. NotificationService가 PATCH /api/notifications/read-all API를 호출
   /// 2. 성공 시 로컬 _notifications 리스트의 모든 알림의 isRead를 true로 업데이트
   /// 3. _unreadCount를 0으로 설정
-  /// 
+  ///
   /// [사용 시점] 사용자가 "모두 읽음" 버튼을 클릭했을 때
-  /// 
+  ///
   /// [반환값] 성공 시 true, 실패 시 false
   Future<bool> markAllAsRead(String token) async {
     try {
       final success = await _notificationService.markAllAsRead(token);
       if (success) {
-        _notifications = _notifications.map((n) => NotificationModel(
-          id: n.id,
-          type: n.type,
-          title: n.title,
-          message: n.message,
-          senderNickname: n.senderNickname,
-          senderAvatarColor: n.senderAvatarColor,
-          createdAt: n.createdAt,
-          sessionId: n.sessionId,
-          isRead: true,
-        )).toList();
+        _notifications = _notifications
+            .map(
+              (n) => NotificationModel(
+                id: n.id,
+                type: n.type,
+                title: n.title,
+                message: n.message,
+                senderNickname: n.senderNickname,
+                senderAvatarColor: n.senderAvatarColor,
+                createdAt: n.createdAt,
+                sessionId: n.sessionId,
+                isRead: true,
+              ),
+            )
+            .toList();
         _unreadCount = 0;
         notifyListeners();
       }
@@ -120,18 +129,21 @@ class NotificationProvider with ChangeNotifier {
   }
 
   /// 알림 삭제 함수
-  /// 
+  ///
   /// [내부 동작]
   /// 1. NotificationService가 DELETE /api/notifications/{notificationId} API를 호출
   /// 2. 성공 시 로컬 _notifications 리스트에서 해당 알림을 제거
   /// 3. 읽지 않은 알림 개수를 재계산하여 _unreadCount 업데이트
-  /// 
+  ///
   /// [사용 시점] 사용자가 알림을 삭제할 때
-  /// 
+  ///
   /// [반환값] 성공 시 true, 실패 시 false
   Future<bool> deleteNotification(String notificationId, String token) async {
     try {
-      final success = await _notificationService.deleteNotification(notificationId, token);
+      final success = await _notificationService.deleteNotification(
+        notificationId,
+        token,
+      );
       if (success) {
         _notifications.removeWhere((n) => n.id == notificationId);
         _unreadCount = _notifications.where((n) => !n.isRead).length;

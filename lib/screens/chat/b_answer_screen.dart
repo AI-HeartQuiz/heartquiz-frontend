@@ -6,7 +6,7 @@ import 'package:heartquiz/providers/auth_provider.dart';
 
 /// B가 질문 5개에 답변하는 화면 (챗봇 UI)
 class BAnswerScreen extends StatefulWidget {
-  final String sessionId;
+  final int sessionId;
   final List<String> questions;
 
   const BAnswerScreen({

@@ -7,7 +7,7 @@ class NotificationModel {
   final String senderNickname;
   final String? senderAvatarColor; // 선택적
   final DateTime createdAt;
-  final String? sessionId; // 질문지 관련 알림인 경우
+  final int? sessionId; // 질문지 관련 알림인 경우
   final bool isRead;
 
   NotificationModel({
@@ -31,7 +31,7 @@ class NotificationModel {
       senderNickname: json['sender_nickname'] ?? '',
       senderAvatarColor: json['sender_avatar_color'],
       createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
-      sessionId: json['session_id'],
+      sessionId: json['session_id'] != null ? (json['session_id'] is int ? json['session_id'] : int.tryParse(json['session_id'].toString())) : null,
       isRead: json['is_read'] ?? false,
     );
   }

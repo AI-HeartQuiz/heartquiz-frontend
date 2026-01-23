@@ -1,15 +1,18 @@
 class UserSearchResult {
+  final int id;
   final String email;
   final String nickname;
 
   UserSearchResult({
+    required this.id,
     required this.email,
-    required this.nickname
+    required this.nickname,
   });
 
   // 서버에서 온 JSON 데이터를 객체로 변환하는 팩토리 생성자
   factory UserSearchResult.fromJson(Map<String, dynamic> json) {
     return UserSearchResult(
+      id: json['id'] ?? json['user_id'] ?? 0,
       email: json['email'] ?? '',
       nickname: json['nickname'] ?? '',
     );
@@ -17,9 +20,6 @@ class UserSearchResult {
 
   // 객체 데이터를 다시 JSON으로 보낼 때 (필요한 경우)
   Map<String, dynamic> toJson() {
-    return {
-      'email': email,
-      'nickname': nickname,
-    };
+    return {'id': id, 'email': email, 'nickname': nickname};
   }
 }

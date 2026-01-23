@@ -70,7 +70,7 @@ class QuizService {
   ///
   /// API 3.1: 질문지 생성 요청
   Future<BQuestionsResponse?> generateQuestions(
-    String sessionId,
+    int sessionId,
     String userAId,
     String situationText,
     List<FollowUpPair> followUpQa,
@@ -119,7 +119,7 @@ class QuizService {
   ///
   /// API 3.3: B의 답변 제출
   Future<bool> submitBAnswers(
-    String sessionId,
+    int sessionId,
     List<BAnswer> answers,
     String token,
   ) async {
@@ -161,7 +161,7 @@ class QuizService {
   /// [실패 시] Exception을 throw하며, error.message에 에러 메시지가 포함됩니다.
   ///
   /// API 3.4: 리포트 생성
-  Future<ReportModel?> generateReport(String sessionId, String token) async {
+  Future<ReportModel?> generateReport(int sessionId, String token) async {
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/quiz/report?session_id=$sessionId'),
@@ -196,10 +196,7 @@ class QuizService {
   /// [실패 시] Exception을 throw하며, error.message에 에러 메시지가 포함됩니다.
   ///
   /// API 3.2: B의 질문 목록 조회
-  Future<BQuestionsResponse?> getBQuestions(
-    String sessionId,
-    String token,
-  ) async {
+  Future<BQuestionsResponse?> getBQuestions(int sessionId, String token) async {
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/quiz/questions?session_id=$sessionId'),
@@ -227,23 +224,20 @@ class QuizService {
   /// [인증 헤더] Authorization: Bearer {token}
   /// [요청 바디] {
   ///   "session_id": string,
-  ///   "friend_email": string (받을 사람(B)의 이메일)
+  ///   "friend_id": string (받을 사람(B)의 사용자 ID)
   /// }
   /// [응답 형식] 성공 시 빈 응답 또는 { "success": true }
   /// [성공 코드] 200, 201
   /// [실패 시] Exception을 throw하며, error.message에 에러 메시지가 포함됩니다.
   ///
-  /// 세션 ID와 받을 사람(B)의 이메일을 전송합니다.
+  /// 세션 ID와 받을 사람(B)의 사용자 ID를 전송합니다.
   Future<bool> sendQuestionsToFriend(
-    String sessionId,
-    String friendEmail,
+    int sessionId,
+    int friendId,
     String token,
   ) async {
     try {
-      final requestBody = {
-        'session_id': sessionId,
-        'friend_email': friendEmail,
-      };
+      final requestBody = {'session_id': sessionId, 'friend_id': friendId};
 
       final response = await http.post(
         Uri.parse('$baseUrl/quiz/send'),
