@@ -13,7 +13,7 @@ class FriendSelectScreen extends StatefulWidget {
 }
 
 class _FriendSelectScreenState extends State<FriendSelectScreen> {
-  String? _selectedFriendEmail;
+  int? _selectedFriendId;
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -42,7 +42,7 @@ class _FriendSelectScreenState extends State<FriendSelectScreen> {
   }
 
   Future<void> _sendQuestions() async {
-    if (_selectedFriendEmail == null) {
+    if (_selectedFriendId == null) {
       _showError('친구를 선택해주세요.');
       return;
     }
@@ -57,7 +57,7 @@ class _FriendSelectScreenState extends State<FriendSelectScreen> {
     }
 
     final success = await chatProvider.sendQuestionsToFriend(
-      _selectedFriendEmail!,
+      _selectedFriendId!,
       token,
     );
 
@@ -265,7 +265,7 @@ class _FriendSelectScreenState extends State<FriendSelectScreen> {
 
   // 각 친구 항목 카드 위젯
   Widget _buildFriendItem(UserSearchResult friend, Color primaryColor) {
-    bool isSelected = _selectedFriendEmail == friend.email;
+    bool isSelected = _selectedFriendId == friend.id;
     // 닉네임 첫 글자로 아이콘 색상 결정
     final colorIndex = friend.nickname.codeUnits.fold(0, (a, b) => a + b) % 7;
     final colors = [
@@ -283,7 +283,7 @@ class _FriendSelectScreenState extends State<FriendSelectScreen> {
     return GestureDetector(
       onTap: () {
         setState(() {
-          _selectedFriendEmail = friend.email;
+          _selectedFriendId = friend.id;
         });
       },
       child: AnimatedContainer(

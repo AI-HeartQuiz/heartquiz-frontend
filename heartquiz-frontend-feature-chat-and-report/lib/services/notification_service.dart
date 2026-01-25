@@ -18,7 +18,7 @@ class NotificationService {
   Future<List<NotificationModel>> getNotifications(String token) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/notifications'),
+        Uri.parse('$baseUrl/notifications/invites'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',

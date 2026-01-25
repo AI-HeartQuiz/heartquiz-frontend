@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:heartquiz/models/chat_model.dart';
 import 'package:provider/provider.dart';
 import 'package:heartquiz/widgets/chat_widgets.dart';
 import 'package:heartquiz/providers/chat_session_provider.dart';
@@ -7,7 +8,7 @@ import 'package:heartquiz/providers/auth_provider.dart';
 /// B가 질문 5개에 답변하는 화면 (챗봇 UI)
 class BAnswerScreen extends StatefulWidget {
   final String sessionId;
-  final List<String> questions;
+  final List<QuestionItem> questions;
 
   const BAnswerScreen({
     super.key,
@@ -37,7 +38,7 @@ class _BAnswerScreenState extends State<BAnswerScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.questions.isNotEmpty) {
         setState(() {
-          _messages.add({"isAi": true, "text": widget.questions[0]});
+          _messages.add({"isAi": true, "text": widget.questions[0].text});
         });
       }
     });
@@ -78,7 +79,7 @@ class _BAnswerScreenState extends State<BAnswerScreen> {
             _currentQuestionIndex++;
             _messages.add({
               "isAi": true,
-              "text": widget.questions[_currentQuestionIndex],
+              "text": widget.questions[_currentQuestionIndex].text,
             });
             _isProcessing = false;
           });

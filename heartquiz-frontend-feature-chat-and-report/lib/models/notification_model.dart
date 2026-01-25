@@ -28,25 +28,27 @@ class NotificationModel {
       type: json['type'] ?? '',
       title: json['title'] ?? '',
       message: json['message'] ?? '',
-      senderNickname: json['sender_nickname'] ?? '',
+      senderNickname: json['senderNickname'] ?? '',
       senderAvatarColor: json['sender_avatar_color'],
-      createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
-      sessionId: json['session_id'],
-      isRead: json['is_read'] ?? false,
+      createdAt: DateTime.parse(
+        json['createdAt'] ?? DateTime.now().toIso8601String(),
+      ),
+      sessionId: json['sessionId'],
+      isRead: json['isRead'] ?? false,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'type': type,
-        'title': title,
-        'message': message,
-        'sender_nickname': senderNickname,
-        'sender_avatar_color': senderAvatarColor,
-        'created_at': createdAt.toIso8601String(),
-        'session_id': sessionId,
-        'is_read': isRead,
-      };
+    'id': id,
+    'type': type,
+    'title': title,
+    'message': message,
+    'sender_nickname': senderNickname,
+    'sender_avatar_color': senderAvatarColor,
+    'created_at': createdAt.toIso8601String(),
+    'session_id': sessionId,
+    'is_read': isRead,
+  };
 
   /// 상대적으로 표시할 시간 문자열 (예: "방금 전", "5분 전")
   String get relativeTime {

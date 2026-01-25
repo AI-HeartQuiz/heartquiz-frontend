@@ -43,6 +43,15 @@ class _ReportScreenState extends State<ReportScreen> {
     final report = chatProvider.reportData;
     final userNickname = authProvider.userNickname ?? '사용자';
 
+    String partnerName = '상대방';
+    if (report != null) {
+      if (userNickname == report.userAName) {
+        partnerName = report.userBName;
+      } else {
+        partnerName = report.userAName;
+      }
+    }
+
     // 현재 사용자가 A인지 B인지 확인
     // B인 경우: bQuestions가 있고 답변이 완료된 상태
     final isUserB =
@@ -97,38 +106,77 @@ class _ReportScreenState extends State<ReportScreen> {
               children: [
                 // 1. 아바타 커플 섹션
                 ReportAvatarSection(
-                  leftName: userNickname,
-                  rightName: report.partnerNickname ?? '상대방',
+                  leftName: userNickname, // 나
+                  rightName: partnerName, // [수정] 계산된 상대방 이름
                 ),
 
                 // 2. 속마음 비교 섹션 (A의 속마음, B의 속마음 순서로 고정)
+                Builder(
+                  builder: (context) {
+                    // 내가 A(방장)인지 확인
+                    final bool isUserA = (userNickname == report.userAName);
+
+                    // 1) 내 카드 내용 준비
+                    // 내가 A면 -> 내 생각은 A생각
+                    // 내가 B면 -> 내 생각은 B생각
+                    final myThought = isUserA
+                        ? report.aThought
+                        : report.bThought;
+
+                    // 2) 상대방 카드 내용 준비
+                    final partnerThought = isUserA
+                        ? report.bThought
+                        : report.aThought;
+
+                    return Column(
+                      children: [
+                        // [나의 속마음 카드]
+                        InnerThoughtCard(
+                          label: '$userNickname의 속마음', // 내 이름
+                          thought: myThought, // 내 생각
+                          isPartner: false, // 초록색(내꺼)
+                        ),
+                        const SizedBox(height: 12),
+
+                        // [상대방의 속마음 카드]
+                        InnerThoughtCard(
+                          label: '$partnerName의 속마음', // 상대방 이름
+                          thought: partnerThought, // 상대방 생각
+                          isPartner: true, // 회색(상대꺼)
+                        ),
+                      ],
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 24), // 간격 추가
                 // B가 볼 때: B의 속마음 → A의 속마음 순서
                 // A가 볼 때: A의 속마음 → B의 속마음 순서
-                if (isUserB) ...[
-                  // B가 보고 있는 경우
-                  InnerThoughtCard(
-                    label: '${userNickname}의 속마음',
-                    thought: report.bThought,
-                    isPartner: false,
-                  ),
-                  InnerThoughtCard(
-                    label: '${report.partnerNickname ?? '상대방'}의 속마음',
-                    thought: report.aThought,
-                    isPartner: true,
-                  ),
-                ] else ...[
-                  // A가 보고 있는 경우
-                  InnerThoughtCard(
-                    label: '${userNickname}의 속마음',
-                    thought: report.aThought,
-                    isPartner: false,
-                  ),
-                  InnerThoughtCard(
-                    label: '${report.partnerNickname ?? '상대방'}의 속마음',
-                    thought: report.bThought,
-                    isPartner: true,
-                  ),
-                ],
+                // if (isUserB) ...[
+                //   // B가 보고 있는 경우
+                //   InnerThoughtCard(
+                //     label: '${partnerName}의 속마음',
+                //     thought: report.bThought,
+                //     isPartner: false,
+                //   ),
+                //   InnerThoughtCard(
+                //     label: '${userNickname ?? '상대방'}의 속마음',
+                //     thought: report.aThought,
+                //     isPartner: true,
+                //   ),
+                // ] else ...[
+                //   // A가 보고 있는 경우
+                //   InnerThoughtCard(
+                //     label: '${userNickname}의 속마음',
+                //     thought: report.aThought,
+                //     isPartner: false,
+                //   ),
+                //   InnerThoughtCard(
+                //     label: '${partnerName ?? '상대방'}의 속마음',
+                //     thought: report.bThought,
+                //     isPartner: true,
+                //   ),
+                // ],
 
                 // 3. AI 중재 메시지 카드
                 // B가 볼 때: aDetailForB (A의 입장을 B에게 보여줄 내용)

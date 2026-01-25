@@ -129,6 +129,7 @@ class QuizService {
     String token,
   ) async {
     try {
+      // 수정
       final requestBody = {'answers': answers.map((e) => e.toJson()).toList()};
 
       // ✅ URL 수정: sessions/$sessionId/answers
@@ -144,6 +145,7 @@ class QuizService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         return true;
       } else {
+        print("전송 실패: ${response.body}");
         final errorData = jsonDecode(response.body);
         throw Exception(errorData['error']?['message'] ?? '답변 제출에 실패했습니다.');
       }
@@ -167,8 +169,8 @@ class QuizService {
   Future<ReportModel?> generateReport(String sessionId, String token) async {
     try {
       // ✅ URL 수정: sessions/$sessionId/report (GET 요청)
-      final response = await http.get(
-        Uri.parse('$baseUrl/sessions/$sessionId/report'),
+      final response = await http.post(
+        Uri.parse('$baseUrl/sessions/$sessionId/report/generate'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -241,13 +243,11 @@ class QuizService {
   /// 세션 ID와 받을 사람(B)의 이메일을 전송합니다.
   Future<bool> sendQuestionsToFriend(
     String sessionId,
-    String friendEmail,
+    int friendId,
     String token,
   ) async {
     try {
-      final requestBody = {
-        'friend_email': friendEmail, // 백엔드 DTO 확인 필요 (보통 이메일만 보냄)
-      };
+      final requestBody = {'session_id': sessionId, 'friend_id': friendId};
 
       // ✅ URL 수정: sessions/$sessionId/invites
       final response = await http.post(

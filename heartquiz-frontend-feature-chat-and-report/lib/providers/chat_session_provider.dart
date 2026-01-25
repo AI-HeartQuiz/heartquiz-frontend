@@ -30,7 +30,7 @@ class ChatSessionProvider with ChangeNotifier {
   String? _sessionId;
 
   // B에게 전달될 질문 5개
-  List<String> _bQuestions = [];
+  List<QuestionItem> _bQuestions = [];
 
   // B의 답변들
   List<BAnswer> _bAnswers = [];
@@ -49,7 +49,7 @@ class ChatSessionProvider with ChangeNotifier {
   String? get situationText => _situationText;
   List<FollowUpPair> get followUpPairs => _followUpPairs;
   String? get sessionId => _sessionId;
-  List<String> get bQuestions => _bQuestions;
+  List<QuestionItem> get bQuestions => _bQuestions;
   List<BAnswer> get bAnswers => _bAnswers;
   ReportModel? get reportData => _reportData;
   List<QuizSessionItem> get quizSessions => _quizSessions;
@@ -88,26 +88,51 @@ class ChatSessionProvider with ChangeNotifier {
 
   /// 세션 ID 설정
   void setSessionId(String id) {
+    // _sessionId = id; 기존 코드
+    // notifyListeners();
+    // 1. 값이 똑같으면 아무것도 하지 않음 (무한 루프 및 불필요한 렌더링 방지)
+    if (_sessionId == id) return;
+
     _sessionId = id;
-    notifyListeners();
+
+    // 2. 화면 빌드 충돌 방지 (Microtask로 감싸서 실행 순서를 아주 잠시 미룸)
+    Future.microtask(() {
+      notifyListeners();
+    });
   }
 
   /// B에게 전달될 질문 5개 설정
-  void setBQuestions(List<String> questions) {
+  void setBQuestions(List<QuestionItem> questions) {
+    // 기존 코드
+    // _bQuestions = questions;
+    // notifyListeners();
     _bQuestions = questions;
-    notifyListeners();
+
+    Future.microtask(() {
+      notifyListeners();
+    });
   }
 
   /// B의 답변 추가/업데이트
   void setBAnswer(int questionIndex, String answer) {
     if (questionIndex >= 0 && questionIndex < _bQuestions.length) {
       final question = _bQuestions[questionIndex];
+
+      // [추가] 질문 ID를 사용하여 답변 객체 생성
+      final newAnswer = BAnswer(
+        questionId: question.id, // 질문 ID 생성
+        text: answer, // 답변 내용
+        role: 'B', // 역할 B 고정
+      );
+
       // 이미 답변이 있으면 업데이트, 없으면 추가
-      final existingIndex = _bAnswers.indexWhere((a) => a.question == question);
+      final existingIndex = _bAnswers.indexWhere(
+        (a) => a.questionId == question,
+      );
       if (existingIndex >= 0) {
-        _bAnswers[existingIndex] = BAnswer(question: question, answer: answer);
+        _bAnswers[existingIndex] = newAnswer; // 업데이트
       } else {
-        _bAnswers.add(BAnswer(question: question, answer: answer));
+        _bAnswers.add(newAnswer); // 추가
       }
       notifyListeners();
     }
@@ -126,8 +151,15 @@ class ChatSessionProvider with ChangeNotifier {
 
   /// 로딩 상태 설정
   void setLoading(bool value) {
+    // 1. 값이 같으면 무시 (불필요한 렌더링 방지)
+    if (_isLoading == value) return;
+
     _isLoading = value;
-    notifyListeners();
+
+    // 2. ★수정★ 화면 빌드 충돌 방지 (작업을 아주 잠시 미룸)
+    Future.microtask(() {
+      notifyListeners();
+    });
   }
 
   /// 에러 메시지 설정
@@ -265,15 +297,15 @@ class ChatSessionProvider with ChangeNotifier {
   /// [사용 시점] 사용자 A가 질문지를 생성한 후 친구 선택 화면에서 전송할 때
   ///
   /// [반환값] 성공 시 true, 실패 시 false (에러 메시지는 _errorMessage에 저장됨)
-  Future<bool> sendQuestionsToFriend(String friendEmail, String token) async {
+  Future<bool> sendQuestionsToFriend(int friendId, String token) async {
     if (_sessionId == null) {
       _errorMessage = '질문지 세션이 없습니다. 다시 질문지를 생성해주세요.';
       notifyListeners();
       return false;
     }
 
-    if (friendEmail.isEmpty) {
-      _errorMessage = '친구를 선택해주세요.';
+    if (friendId <= 0) {
+      _errorMessage = '$friendId, 친구를 선택해주세요.';
       notifyListeners();
       return false;
     }
@@ -284,7 +316,7 @@ class ChatSessionProvider with ChangeNotifier {
     try {
       final success = await _quizService.sendQuestionsToFriend(
         _sessionId!,
-        friendEmail,
+        friendId,
         token,
       );
 
@@ -454,8 +486,11 @@ class ChatSessionProvider with ChangeNotifier {
 
     try {
       _quizSessions = await _quizService.getQuizSessions(token);
+      print("✅ 세션 목록 로드 성공: ${_quizSessions.length}개 가져옴");
+
       setLoading(false);
     } catch (e) {
+      print("🚨 세션 목록 로드 실패 에러: $e");
       _errorMessage = e.toString().replaceFirst('Exception: ', '');
       _quizSessions = [];
       setLoading(false);

@@ -24,9 +24,9 @@ class UserSearchResult {
     return UserSearchResult(
       // id가 없으면 userId도 찾아보고, 그래도 없으면 0
       // 이렇게 하면 서버가 뭐라고 보내든 ID를 찾아냅니다.
-      id: json['friendUserid'] ?? 0,
-      email: json['friendemail'] ?? '',
-      nickname: json['friendnickname'] ?? '',
+      id: json['friendUserId'] ?? 0,
+      email: json['friendEmail'] ?? '',
+      nickname: json['friendNickname'] ?? '',
     );
   }
 }

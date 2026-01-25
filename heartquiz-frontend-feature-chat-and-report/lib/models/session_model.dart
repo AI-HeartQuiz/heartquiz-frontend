@@ -20,13 +20,13 @@ class QuizSessionItem {
 
   factory QuizSessionItem.fromJson(Map<String, dynamic> json) {
     return QuizSessionItem(
-      sessionId: json['session_id'] ?? '',
-      partnerNickname: json['partner_nickname'] ?? '상대방',
-      status: json['status'] ?? '진행 중', // 'ongoing' 또는 'completed'
+      sessionId: json['sessionId']?.toString() ?? '',
+      partnerNickname: json['partnerNickname'] ?? '상대방',
+      status: json['status'] ?? 'ONGOING', // 'ongoing' 또는 'completed'
       // title: json['title'],
       // description: json['description'],
-      createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'])
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
           : null,
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at'])
@@ -47,12 +47,14 @@ class QuizSessionItem {
   /// 상태를 한국어로 변환
   String get statusKorean {
     switch (status) {
-      case 'completed':
-      case '완료됨':
-        return '완료됨';
-      case 'ongoing':
-      case '진행 중':
+      case 'DRAFT':
+        return '작성 중';
+      case 'QUESTIONS_READY':
+        return '준비 완료';
+      case 'ONGOING': // [수정] 백엔드 값 (대문자)
         return '진행 중';
+      case 'COMPLETED': // [수정] 백엔드 값 (대문자)
+        return '완료됨';
       default:
         return status;
     }
@@ -60,6 +62,7 @@ class QuizSessionItem {
 
   /// 완료 여부
   bool get isCompleted {
-    return status == 'completed' || status == '완료됨';
+    // [수정] 백엔드 값 (대문자) 체크
+    return status == 'COMPLETED';
   }
 }
