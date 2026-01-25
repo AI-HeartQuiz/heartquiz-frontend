@@ -321,7 +321,7 @@ class SectionTitle extends StatelessWidget {
 
 /// 7. 퀴즈 세션 카드 위젯 (홈 화면용)
 class QuizSessionCard extends StatelessWidget {
-  final int sessionId;
+  final String sessionId;
   final String partnerNickname;
   final String status;
   final VoidCallback onTap;

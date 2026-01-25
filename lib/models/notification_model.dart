@@ -7,7 +7,7 @@ class NotificationModel {
   final String senderNickname;
   final String? senderAvatarColor; // 선택적
   final DateTime createdAt;
-  final int? sessionId; // 질문지 관련 알림인 경우
+  final String? sessionId; // 질문지 관련 알림인 경우
   final bool isRead;
 
   NotificationModel({
@@ -24,29 +24,31 @@ class NotificationModel {
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
     return NotificationModel(
-      id: json['id'] ?? '',
+      id: json['id']?.toString() ?? '',
       type: json['type'] ?? '',
       title: json['title'] ?? '',
       message: json['message'] ?? '',
-      senderNickname: json['sender_nickname'] ?? '',
+      senderNickname: json['senderNickname'] ?? '',
       senderAvatarColor: json['sender_avatar_color'],
-      createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
-      sessionId: json['session_id'] != null ? (json['session_id'] is int ? json['session_id'] : int.tryParse(json['session_id'].toString())) : null,
-      isRead: json['is_read'] ?? false,
+      createdAt: DateTime.parse(
+        json['createdAt'] ?? DateTime.now().toIso8601String(),
+      ),
+      sessionId: json['sessionId']?.toString(),
+      isRead: json['isRead'] ?? false,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'type': type,
-        'title': title,
-        'message': message,
-        'sender_nickname': senderNickname,
-        'sender_avatar_color': senderAvatarColor,
-        'created_at': createdAt.toIso8601String(),
-        'session_id': sessionId,
-        'is_read': isRead,
-      };
+    'id': id,
+    'type': type,
+    'title': title,
+    'message': message,
+    'sender_nickname': senderNickname,
+    'sender_avatar_color': senderAvatarColor,
+    'created_at': createdAt.toIso8601String(),
+    'session_id': sessionId,
+    'is_read': isRead,
+  };
 
   /// 상대적으로 표시할 시간 문자열 (예: "방금 전", "5분 전")
   String get relativeTime {

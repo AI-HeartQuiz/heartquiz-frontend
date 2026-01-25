@@ -46,13 +46,9 @@ class _ReportScreenState extends State<ReportScreen> {
     String partnerName = '상대방';
     if (report != null) {
       if (userNickname == report.userAName) {
-        partnerName = report.userBName ?? '상대방';
+        partnerName = report.userBName;
       } else {
-        partnerName = report.userAName ?? '상대방';
-      }
-      // userAName/userBName이 없으면 기존 partnerNickname 사용 (하위 호환성)
-      if (partnerName == '상대방' && report.partnerNickname != null) {
-        partnerName = report.partnerNickname!;
+        partnerName = report.userAName;
       }
     }
 
@@ -118,11 +114,7 @@ class _ReportScreenState extends State<ReportScreen> {
                 Builder(
                   builder: (context) {
                     // 내가 A(방장)인지 확인
-                    final bool isUserA =
-                        (report.userAName != null &&
-                            userNickname == report.userAName) ||
-                        (report.userAName == null &&
-                            !isUserB); // 하위 호환성: userAName이 없으면 기존 로직 사용
+                    final bool isUserA = userNickname == report.userAName;
 
                     // 1) 내 카드 내용 준비
                     // 내가 A면 -> 내 생각은 A생각

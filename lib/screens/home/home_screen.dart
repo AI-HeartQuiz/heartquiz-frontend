@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:heartquiz/widgets/home_widgets.dart';
 import 'package:heartquiz/providers/auth_provider.dart';
 import 'package:heartquiz/providers/chat_session_provider.dart';
-import 'package:heartquiz/providers/notification_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,11 +17,10 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // 화면이 로드될 때 유저 정보와 세션 목록, 알림을 가져옵니다.
+    // 화면이 로드될 때 유저 정보와 세션 목록을 가져옵니다.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadUserInfo();
       _loadSessions();
-      _loadNotifications();
     });
   }
 
@@ -51,17 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _loadNotifications() async {
-    final notificationProvider = context.read<NotificationProvider>();
-    final authProvider = context.read<AuthProvider>();
-    final token = authProvider.accessToken;
-
-    if (token != null) {
-      await notificationProvider.fetchNotifications(token);
-    }
-  }
-
-  Future<void> _handleSessionTap(int sessionId, bool isCompleted) async {
+  Future<void> _handleSessionTap(String sessionId, bool isCompleted) async {
     if (!isCompleted) {
       // 진행 중인 세션은 아직 리포트를 볼 수 없음
       return;
@@ -74,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (token == null) return;
 
     // 세션 ID를 설정하고 리포트를 생성
-    chatProvider.setSessionId(sessionId.toString());
+    chatProvider.setSessionId(sessionId);
     final report = await chatProvider.generateReport(token);
 
     if (report != null && mounted) {
@@ -85,7 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     // Provider에서 실시간으로 닉네임을 감시합니다.
-    final nickname = context.watch<AuthProvider>().nickname ?? "사용자";
+    final nickname = context.watch<AuthProvider>().userNickname ?? "사용자";
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8F8),
@@ -96,16 +84,11 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 서버에서 가져온 닉네임을 헤더에 넘겨줍니다.
-                Consumer<NotificationProvider>(
-                  builder: (context, notificationProvider, child) {
-                    return HomeHeader(
-                      userName: nickname,
-                      hasNotification:
-                          notificationProvider.hasUnreadNotifications,
-                      onNotificationTap: () {
-                        Navigator.pushNamed(context, '/notification');
-                      },
-                    );
+                HomeHeader(
+                  userName: nickname,
+                  hasNotification: true,
+                  onNotificationTap: () {
+                    Navigator.pushNamed(context, '/notification');
                   },
                 ),
 

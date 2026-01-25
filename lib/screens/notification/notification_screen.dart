@@ -48,7 +48,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
         notification.sessionId != null) {
       final chatProvider = context.read<ChatSessionProvider>();
       final questionsResponse = await chatProvider.getBQuestions(
-        notification.sessionId!.toString(),
+        notification.sessionId!,
         token,
       );
 

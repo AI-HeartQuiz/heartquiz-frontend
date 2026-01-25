@@ -49,7 +49,7 @@ class ChatSessionProvider with ChangeNotifier {
   List<FollowUpPair> get followUpPairs => _followUpPairs;
   String? get sessionId => _sessionId;
   List<QuestionItem> get bQuestions => _bQuestions;
-  // UX/UI 호환성을 위한 질문 텍스트 리스트 getter
+  // UX/UI 호환성을 위한 질문 텍스트 리스트 getter (유지)
   List<String> get bQuestionTexts => _bQuestions.map((q) => q.text).toList();
   List<BAnswer> get bAnswers => _bAnswers;
   ReportModel? get reportData => _reportData;
@@ -109,18 +109,6 @@ class ChatSessionProvider with ChangeNotifier {
     });
   }
 
-  /// B에게 전달될 질문 5개 설정 (하위 호환성: String 리스트)
-  void setBQuestionsFromTexts(List<String> questionTexts) {
-    _bQuestions = questionTexts
-        .asMap()
-        .entries
-        .map((e) => QuestionItem(id: e.key, text: e.value))
-        .toList();
-    Future.microtask(() {
-      notifyListeners();
-    });
-  }
-
   /// B의 답변 추가/업데이트
   void setBAnswer(int questionIndex, String answer) {
     if (questionIndex >= 0 && questionIndex < _bQuestions.length) {
@@ -135,7 +123,7 @@ class ChatSessionProvider with ChangeNotifier {
 
       // 이미 답변이 있으면 업데이트, 없으면 추가
       final existingIndex = _bAnswers.indexWhere(
-        (a) => a.questionId == question.id, // 버그 수정: question.id로 비교
+        (a) => a.questionId == question.id,
       );
       if (existingIndex >= 0) {
         _bAnswers[existingIndex] = newAnswer; // 업데이트

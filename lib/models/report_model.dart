@@ -12,12 +12,9 @@ class ReportModel {
   // 공통 팁
   final List<String> conversationTips;
 
-  // 파트너 닉네임 (선택적) - 하위 호환성 유지
-  final String? partnerNickname;
-
   // 사용자 A와 B의 이름 (백엔드에서 제공)
-  final String? userAName;
-  final String? userBName;
+  final String userAName;
+  final String userBName;
 
   ReportModel({
     required this.aThought,
@@ -26,9 +23,8 @@ class ReportModel {
     required this.aDetailForB,
     required this.bDetailForA,
     required this.conversationTips,
-    this.partnerNickname,
-    this.userAName,
-    this.userBName,
+    required this.userAName,
+    required this.userBName,
   });
 
   factory ReportModel.fromJson(Map<String, dynamic> json) {
@@ -39,9 +35,8 @@ class ReportModel {
       aDetailForB: json['a_detail_for_b'] ?? '',
       bDetailForA: json['b_detail_for_a'] ?? '',
       conversationTips: List<String>.from(json['conversation_tips'] ?? []),
-      partnerNickname: json['partner_nickname'],
-      userAName: json['user_a_name'] ?? json['userAName'],
-      userBName: json['user_b_name'] ?? json['userBName'],
+      userAName: json['user_a_name'] ?? '사용자A',
+      userBName: json['user_b_name'] ?? '상대방',
     );
   }
 
