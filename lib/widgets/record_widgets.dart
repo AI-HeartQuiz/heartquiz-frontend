@@ -39,7 +39,11 @@ class RecordSearchBar extends StatelessWidget {
                 controller!.clear();
                 if (onChanged != null) onChanged!("");
               },
-              child: const Icon(Icons.cancel, color: Color(0xFFD1D5DB), size: 20),
+              child: const Icon(
+                Icons.cancel,
+                color: Color(0xFFD1D5DB),
+                size: 20,
+              ),
             ),
         ],
       ),
@@ -71,12 +75,17 @@ class RecordFilterTabs extends StatelessWidget {
             child: GestureDetector(
               onTap: () => onTabChanged(tab),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: isSelected ? const Color(0xFF12C49D) : Colors.white,
                   borderRadius: BorderRadius.circular(100),
                   border: Border.all(
-                    color: isSelected ? const Color(0xFF12C49D) : const Color(0xFFE5E7EB),
+                    color: isSelected
+                        ? const Color(0xFF12C49D)
+                        : const Color(0xFFE5E7EB),
                   ),
                 ),
                 child: Text(
@@ -144,11 +153,50 @@ class RecordListCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(color: item.avatarBgColor, shape: BoxShape.circle),
-            child: Icon(item.avatarIcon, color: item.avatarIconColor, size: 32),
+          // 리포트 스타일 프로필 아이콘
+          Builder(
+            builder: (context) {
+              final colorIndex =
+                  item.name.codeUnits.fold(0, (a, b) => a + b) % 7;
+              final colors = [
+                const Color(0xFFE8F5E9),
+                const Color(0xFFE3F2FD),
+                const Color(0xFFF3E5F5),
+                const Color(0xFFFFE0B2),
+                const Color(0xFFE0F2F1),
+                const Color(0xFFE1F5FE),
+                const Color(0xFFEDE7F6),
+              ];
+              final iconColors = [
+                const Color(0xFF12C49D).withOpacity(0.6),
+                Colors.blue.shade300,
+                Colors.purple.shade300,
+                Colors.orange.shade300,
+                Colors.teal.shade300,
+                Colors.cyan.shade300,
+                Colors.indigo.shade300,
+              ];
+              final bgColor = colors[colorIndex];
+              final iconColor = iconColors[colorIndex];
+
+              return Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: bgColor,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Icon(Icons.person, color: iconColor, size: 28),
+              );
+            },
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -159,13 +207,22 @@ class RecordListCard extends StatelessWidget {
                   children: [
                     Text(
                       item.name,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF111111)),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF111111),
+                      ),
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
-                        color: isOngoing ? const Color(0xFF12C49D).withOpacity(0.1) : const Color(0xFFF3F4F6),
+                        color: isOngoing
+                            ? const Color(0xFF12C49D).withOpacity(0.1)
+                            : const Color(0xFFF3F4F6),
                         borderRadius: BorderRadius.circular(100),
                       ),
                       child: Text(
@@ -173,7 +230,9 @@ class RecordListCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
-                          color: isOngoing ? const Color(0xFF12C49D) : const Color(0xFF6B7280),
+                          color: isOngoing
+                              ? const Color(0xFF12C49D)
+                              : const Color(0xFF6B7280),
                         ),
                       ),
                     ),
@@ -182,13 +241,20 @@ class RecordListCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   item.title,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF111111)),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF111111),
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
                   item.description,
-                  style: const TextStyle(fontSize: 12, color: Color(0xFF767676)),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF767676),
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

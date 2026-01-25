@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:heartquiz/widgets/home_widgets.dart';
 import 'package:heartquiz/providers/auth_provider.dart';
 import 'package:heartquiz/providers/chat_session_provider.dart';
+import 'package:heartquiz/providers/notification_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,10 +18,11 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // 화면이 로드될 때 유저 정보와 세션 목록을 가져옵니다.
+    // 화면이 로드될 때 유저 정보와 세션 목록, 알림을 가져옵니다.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadUserInfo();
       _loadSessions();
+      _loadNotifications();
     });
   }
 
@@ -46,6 +48,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (token != null) {
       await chatProvider.fetchQuizSessions(token);
+    }
+  }
+
+  Future<void> _loadNotifications() async {
+    final notificationProvider = context.read<NotificationProvider>();
+    final authProvider = context.read<AuthProvider>();
+    final token = authProvider.accessToken;
+
+    if (token != null) {
+      await notificationProvider.fetchNotifications(token);
     }
   }
 
@@ -84,11 +96,16 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 서버에서 가져온 닉네임을 헤더에 넘겨줍니다.
-                HomeHeader(
-                  userName: nickname,
-                  hasNotification: true,
-                  onNotificationTap: () {
-                    Navigator.pushNamed(context, '/notification');
+                Consumer<NotificationProvider>(
+                  builder: (context, notificationProvider, child) {
+                    return HomeHeader(
+                      userName: nickname,
+                      hasNotification:
+                          notificationProvider.hasUnreadNotifications,
+                      onNotificationTap: () {
+                        Navigator.pushNamed(context, '/notification');
+                      },
+                    );
                   },
                 ),
 

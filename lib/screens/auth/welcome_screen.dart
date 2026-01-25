@@ -8,7 +8,8 @@ class WelcomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // 1. 이전 화면(SignUpScreen)에서 보낸 데이터를 받습니다.
     // 만약 전달된 값이 없으면 '사용자'를 기본값으로 사용합니다.
-    final String nickname = ModalRoute.of(context)?.settings.arguments as String? ?? "사용자";
+    final String nickname =
+        ModalRoute.of(context)?.settings.arguments as String? ?? "사용자";
 
     return Scaffold(
       body: SafeArea(
@@ -66,7 +67,7 @@ class WelcomeScreen extends StatelessWidget {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 16,
-                        color: Color(0xFF886364),
+                        color: Color(0xFF6B7280),
                         height: 1.5,
                       ),
                     ),
@@ -83,7 +84,7 @@ class WelcomeScreen extends StatelessWidget {
                   Navigator.pushNamedAndRemoveUntil(
                     context,
                     '/home',
-                        (route) => false,
+                    (route) => false,
                   );
                 },
               ),

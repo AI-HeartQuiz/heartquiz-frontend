@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 
-/// 1. 프로필 상단 헤더 (설정, 제목, 알림)
+/// 1. 프로필 상단 헤더 (제목, 설정)
 class ProfileHeader extends StatelessWidget {
   final String title;
   final VoidCallback onSettingsTap;
-  final VoidCallback onNotificationTap;
 
   const ProfileHeader({
     super.key,
     required this.title,
     required this.onSettingsTap,
-    required this.onNotificationTap,
   });
 
   @override
@@ -19,26 +17,25 @@ class ProfileHeader extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       color: Colors.white,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          // 왼쪽에 설정 아이콘과 같은 너비의 빈 공간
+          SizedBox(width: 48, height: 48),
+          // 가운데 정렬된 타이틀
+          Expanded(
+            child: Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF181116),
+              ),
+            ),
+          ),
+          // 오른쪽 설정 아이콘
           IconButton(
             icon: const Icon(Icons.settings_outlined, color: Color(0xFF181116)),
             onPressed: onSettingsTap,
-          ),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF181116),
-            ),
-          ),
-          IconButton(
-            icon: const Icon(
-              Icons.notifications_none_rounded,
-              color: Color(0xFF181116),
-            ),
-            onPressed: onNotificationTap,
           ),
         ],
       ),
@@ -86,43 +83,22 @@ class ProfileAvatar extends StatelessWidget {
 
     return Column(
       children: [
-        Stack(
-          alignment: Alignment.bottomRight,
-          children: [
-            Container(
-              width: 112,
-              height: 112,
-              decoration: BoxDecoration(
-                color: bgColor,
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 2),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+        Container(
+          width: 112,
+          height: 112,
+          decoration: BoxDecoration(
+            color: bgColor,
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
-              child: Icon(
-                Icons.person,
-                size: 64,
-                color: iconColor,
-              ),
-            ),
-            GestureDetector(
-              onTap: onEditTap,
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF12C49D),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
-                ),
-                child: const Icon(Icons.edit, color: Colors.white, size: 16),
-              ),
-            ),
-          ],
+            ],
+          ),
+          child: Icon(Icons.person, size: 64, color: iconColor),
         ),
         const SizedBox(height: 16),
         Text(
@@ -165,10 +141,8 @@ class ProfileActionButton extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       height: 48,
-      child: OutlinedButton.icon(
+      child: OutlinedButton(
         onPressed: onPressed,
-        icon: Icon(icon, size: 20),
-        label: Text(text),
         style: OutlinedButton.styleFrom(
           foregroundColor: const Color(0xFF111816),
           backgroundColor: const Color(0xFFF6F7F7),
@@ -177,6 +151,14 @@ class ProfileActionButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
           ),
           textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 20),
+            const SizedBox(width: 8),
+            Text(text),
+          ],
         ),
       ),
     );
@@ -194,10 +176,8 @@ class FriendAddButton extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       height: 48,
-      child: ElevatedButton.icon(
+      child: ElevatedButton(
         onPressed: onPressed,
-        icon: const Icon(Icons.person_add_alt_1, size: 20),
-        label: const Text('새로운 친구 추가'),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF12C49D),
           foregroundColor: Colors.white,
@@ -206,6 +186,14 @@ class FriendAddButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.person_add_alt_1, size: 20),
+            const SizedBox(width: 8),
+            const Text('새로운 친구 추가'),
+          ],
         ),
       ),
     );

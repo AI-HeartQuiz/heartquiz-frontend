@@ -22,7 +22,11 @@ class FriendSearchHeader extends StatelessWidget {
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.chevron_left, color: Color(0xFF111816), size: 32),
+            icon: const Icon(
+              Icons.chevron_left,
+              color: Color(0xFF111816),
+              size: 32,
+            ),
             onPressed: onBackTap,
           ),
           Expanded(
@@ -75,7 +79,11 @@ class FriendSearchBar extends StatelessWidget {
         decoration: InputDecoration(
           hintText: hintText,
           hintStyle: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
-          prefixIcon: const Icon(Icons.search, color: Color(0xFF9CA3AF), size: 22),
+          prefixIcon: const Icon(
+            Icons.search,
+            color: Color(0xFF9CA3AF),
+            size: 22,
+          ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(vertical: 15),
         ),
@@ -110,7 +118,7 @@ class FriendSearchResultCard extends StatelessWidget {
             color: Colors.black.withOpacity(0.05),
             blurRadius: 20,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Row(
@@ -166,11 +174,17 @@ class FriendSearchResultCard extends StatelessWidget {
               children: [
                 Text(
                   name,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Text(
                   email,
-                  style: const TextStyle(fontSize: 12, color: Color(0xFF886364)),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF6B7280),
+                  ),
                 ),
               ],
             ),
@@ -180,10 +194,96 @@ class FriendSearchResultCard extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF12C49D),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               elevation: 0,
             ),
             child: const Text('추가'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 4. 친구 요청 아이템 (받은 요청 목록용)
+class FriendRequestItem extends StatelessWidget {
+  final String nickname;
+  final VoidCallback onAccept;
+
+  const FriendRequestItem({
+    super.key,
+    required this.nickname,
+    required this.onAccept,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // 닉네임 기반 색상 결정
+    final colorIndex = nickname.codeUnits.fold(0, (a, b) => a + b) % 7;
+    final colors = [
+      const Color(0xFFE8F5E9),
+      const Color(0xFFE3F2FD),
+      const Color(0xFFF3E5F5),
+      const Color(0xFFFFE0B2),
+      const Color(0xFFE0F2F1),
+      const Color(0xFFE1F5FE),
+      const Color(0xFFEDE7F6),
+    ];
+    final iconColors = [
+      const Color(0xFF12C49D).withOpacity(0.6),
+      Colors.blue.shade300,
+      Colors.purple.shade300,
+      Colors.orange.shade300,
+      Colors.teal.shade300,
+      Colors.cyan.shade300,
+      Colors.indigo.shade300,
+    ];
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF7ED),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFF97316).withOpacity(0.2)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: colors[colorIndex],
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2),
+            ),
+            child: Icon(Icons.person, color: iconColors[colorIndex], size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              nickname,
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: onAccept,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFF97316),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              minimumSize: Size.zero,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              elevation: 0,
+            ),
+            child: const Text(
+              '수락',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),

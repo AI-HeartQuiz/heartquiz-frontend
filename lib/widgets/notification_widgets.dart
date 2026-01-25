@@ -6,11 +6,7 @@ class NotificationCard extends StatelessWidget {
   final NotificationModel notification;
   final VoidCallback? onTap;
 
-  const NotificationCard({
-    super.key,
-    required this.notification,
-    this.onTap,
-  });
+  const NotificationCard({super.key, required this.notification, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -26,10 +22,7 @@ class NotificationCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: Colors.transparent,
-            width: 1,
-          ),
+          border: Border.all(color: Colors.transparent, width: 1),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
@@ -47,10 +40,7 @@ class NotificationCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: avatarColor,
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white,
-                  width: 2,
-                ),
+                border: Border.all(color: Colors.white, width: 2),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.05),
@@ -59,11 +49,7 @@ class NotificationCard extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Icon(
-                Icons.person,
-                color: iconColor,
-                size: 28,
-              ),
+              child: Icon(Icons.person, color: iconColor, size: 28),
             ),
             const SizedBox(width: 16),
             // 알림 내용
@@ -86,7 +72,7 @@ class NotificationCard extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.normal,
-                      color: Color(0xFF886364),
+                      color: Color(0xFF6B7280),
                     ),
                   ),
                 ],
@@ -94,11 +80,7 @@ class NotificationCard extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             // 화살표 아이콘
-            Icon(
-              Icons.chevron_right,
-              color: Colors.grey.shade300,
-              size: 24,
-            ),
+            Icon(Icons.chevron_right, color: Colors.grey.shade300, size: 24),
           ],
         ),
       ),

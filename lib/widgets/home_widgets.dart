@@ -44,7 +44,7 @@ class HomeHeader extends StatelessWidget {
                   const Text(
                     '오늘도 반가워요',
                     style: TextStyle(
-                      color: Color(0xFF886364),
+                      color: Color(0xFF6B7280),
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
@@ -162,7 +162,7 @@ class EmptyStateView extends StatelessWidget {
             '현재 진행 중인 대화가 없어요.\n새로운 대화를 시작해볼까요?',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Color(0xFF886364),
+              color: Color(0xFF6B7280),
               fontSize: 14,
               fontWeight: FontWeight.w500,
               height: 1.5,
@@ -258,7 +258,12 @@ class HomeBottomNavBar extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(int index, IconData selectedIcon, IconData unselectedIcon, String label) {
+  Widget _buildNavItem(
+    int index,
+    IconData selectedIcon,
+    IconData unselectedIcon,
+    String label,
+  ) {
     final isSelected = currentIndex == index;
     final color = isSelected ? const Color(0xFF12C49D) : Colors.grey.shade400;
 
@@ -272,9 +277,9 @@ class HomeBottomNavBar extends StatelessWidget {
           children: [
             // 선택되었을 때 FILL(채워진 아이콘)을 사용합니다.
             Icon(
-                isSelected ? selectedIcon : unselectedIcon,
-                color: color,
-                size: 26
+              isSelected ? selectedIcon : unselectedIcon,
+              color: color,
+              size: 26,
             ),
             const SizedBox(height: 4),
             Text(
@@ -306,7 +311,7 @@ class SectionTitle extends StatelessWidget {
         style: const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w800,
-          color: Color(0xFF886364),
+          color: Color(0xFF6B7280),
           letterSpacing: 0.5,
         ),
       ),
@@ -332,7 +337,7 @@ class QuizSessionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isOngoing = status == '진행 중' || status == 'ongoing';
-    
+
     // 닉네임 첫 글자로 아이콘 색상 결정
     final colorIndex = partnerNickname.codeUnits.fold(0, (a, b) => a + b) % 7;
     final colors = [
@@ -392,7 +397,10 @@ class QuizSessionCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: isOngoing
                               ? const Color(0xFF12C49D).withOpacity(0.1)

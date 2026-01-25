@@ -152,7 +152,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
           icon: const Icon(Icons.arrow_back_ios_new, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('회원가입', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+        title: const Text(
+          '회원가입',
+          style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -166,12 +169,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   children: [
                     const Text(
                       '계정 정보를\n입력해주세요',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, height: 1.3),
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        height: 1.3,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     const Text(
                       'Heart Quiz에서 사용할 계정 정보를 설정합니다.',
-                      style: TextStyle(fontSize: 15, color: Color(0xFF886364)),
+                      style: TextStyle(fontSize: 15, color: Color(0xFF6B7280)),
                     ),
                     const SizedBox(height: 40),
 

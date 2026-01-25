@@ -22,27 +22,27 @@ class _RecordScreenState extends State<RecordScreen> {
       status: '진행 중',
       title: '우리가 서운했던 날',
       description: '일주일 만에 만난 날의 오해와 진심',
-      avatarIcon: Icons.face,
-      avatarBgColor: const Color(0xFFFFECF0),
-      avatarIconColor: const Color(0xFFFF85A1),
+      avatarIcon: Icons.person,
+      avatarBgColor: const Color(0xFFE8F5E9),
+      avatarIconColor: const Color(0xFF12C49D).withOpacity(0.6),
     ),
     RecordItem(
       name: '지수',
       status: '완료됨',
       title: '우리의 첫 여행 준비',
-      description: '함께 떠날 제주도 여행에 대한 설렘',
-      avatarIcon: Icons.face_2,
-      avatarBgColor: const Color(0xFFE0F7F3),
-      avatarIconColor: const Color(0xFF12C49D),
+      description: '여행 계획을 미루는 것에 대한 불만',
+      avatarIcon: Icons.person,
+      avatarBgColor: const Color(0xFFE3F2FD),
+      avatarIconColor: Colors.blue.shade300,
     ),
     RecordItem(
       name: '희진',
       status: '완료됨',
       title: '속마음 털어놓기',
-      description: '평소에 전하지 못했던 고마운 마음들',
-      avatarIcon: Icons.face_3,
-      avatarBgColor: const Color(0xFFFFF9E5),
-      avatarIconColor: const Color(0xFFFFD43B),
+      description: '약속을 자주 취소하는 것에 대한 아쉬움',
+      avatarIcon: Icons.person,
+      avatarBgColor: const Color(0xFFF3E5F5),
+      avatarIconColor: Colors.purple.shade300,
     ),
   ];
 
@@ -50,9 +50,12 @@ class _RecordScreenState extends State<RecordScreen> {
   List<RecordItem> get _filteredRecords {
     return _allRecords.where((record) {
       // 필터 조건 확인
-      bool matchesFilter = _selectedFilter == '전체' || record.status == _selectedFilter;
+      bool matchesFilter =
+          _selectedFilter == '전체' || record.status == _selectedFilter;
       // 검색 조건 확인 (이름 또는 제목에 포함되는지)
-      bool matchesSearch = record.name.contains(_searchQuery) || record.title.contains(_searchQuery);
+      bool matchesSearch =
+          record.name.contains(_searchQuery) ||
+          record.title.contains(_searchQuery);
 
       return matchesFilter && matchesSearch;
     }).toList();
@@ -74,14 +77,14 @@ class _RecordScreenState extends State<RecordScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        // 메인 탭바의 하나라면 보통 뒤로가기가 없어도 되지만, 필요하시다면 유지
-        leading: IconButton(
-          icon: const Icon(Icons.chevron_left, color: Colors.black, size: 28),
-          onPressed: () => Navigator.pop(context),
-        ),
+        automaticallyImplyLeading: false,
         title: const Text(
           '기록',
-          style: TextStyle(color: Colors.black, fontSize: 17, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 17,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: Column(
@@ -97,11 +100,14 @@ class _RecordScreenState extends State<RecordScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                RecordFilterTabs(
-                  selectedTab: _selectedFilter,
-                  onTabChanged: (tab) {
-                    setState(() => _selectedFilter = tab);
-                  },
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: RecordFilterTabs(
+                    selectedTab: _selectedFilter,
+                    onTabChanged: (tab) {
+                      setState(() => _selectedFilter = tab);
+                    },
+                  ),
                 ),
               ],
             ),
@@ -110,26 +116,35 @@ class _RecordScreenState extends State<RecordScreen> {
           // 3. 필터링된 리스트를 보여줌
           Expanded(
             child: displayList.isEmpty
-                ? const Center(child: Text('검색 결과가 없습니다.', style: TextStyle(color: Colors.grey)))
+                ? const Center(
+                    child: Text(
+                      '검색 결과가 없습니다.',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  )
                 : ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              itemCount: displayList.length,
-              itemBuilder: (context, index) {
-                return RecordListCard(item: displayList[index]);
-              },
-            ),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    itemCount: displayList.length,
+                    itemBuilder: (context, index) {
+                      final item = displayList[index];
+                      final isCompleted = item.status == '완료됨';
+
+                      return Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: isCompleted
+                              ? () {
+                                  Navigator.pushNamed(context, '/report');
+                                }
+                              : null,
+                          borderRadius: BorderRadius.circular(20),
+                          child: RecordListCard(item: item),
+                        ),
+                      );
+                    },
+                  ),
           ),
         ],
-      ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 16),
-        child: FloatingActionButton(
-          onPressed: () => Navigator.pushNamed(context, '/chat'),
-          backgroundColor: const Color(0xFF12C49D),
-          elevation: 4,
-          shape: const CircleBorder(),
-          child: const Icon(Icons.add, color: Colors.white, size: 32),
-        ),
       ),
       bottomNavigationBar: HomeBottomNavBar(
         currentIndex: _currentTabIndex,

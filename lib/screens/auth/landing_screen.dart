@@ -62,7 +62,7 @@ class _LandingScreenState extends State<LandingScreen>
                 const HeartQuizLogo(size: 144),
                 const SizedBox(height: 32),
                 const Text(
-                  'Heart Quiz',
+                  'HeartQuiz',
                   style: TextStyle(
                     fontSize: 40,
                     fontWeight: FontWeight.w800,

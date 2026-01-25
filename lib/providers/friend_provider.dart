@@ -1,50 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:heartquiz/services/friend_service.dart';
-import 'package:heartquiz/models/friend_model.dart'; // UserSearchResult 모델 사용을 위해 임포트
+import 'package:heartquiz/models/friend_model.dart';
 
 class FriendProvider with ChangeNotifier {
   final FriendService _friendService = FriendService();
 
-  // 상태 변수들
-  List<UserSearchResult> _searchResults = []; // 검색 결과 리스트
-  List<UserSearchResult> _myFriends = [];    // 실제 내 친구 리스트
-  bool _isLoading = false;
-  String? _errorMessage; // 에러 메시지 처리를 위한 변수 추가
+  List<UserSearchResult> _searchResults = [];
+  List<UserSearchResult> _myFriends = []; // 진짜 친구 목록
+  List<FriendRequestModel> _pendingRequests = []; // 받은 요청 목록
 
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  // Getters
   List<UserSearchResult> get searchResults => _searchResults;
   List<UserSearchResult> get myFriends => _myFriends;
+  List<FriendRequestModel> get pendingRequests => _pendingRequests;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-  // 1. 내 친구 목록 가져오기 함수
-  // 앱 실행 시 또는 프로필 화면 진입 시 서버의 최신 목록을 가져옵니다.
-  Future<void> fetchFriends(String token) async {
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
-
-    try {
-      // 서비스 레이어의 getFriends 호출 (token 사용)
-      _myFriends = await _friendService.getFriends(token);
-    } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
-      _myFriends = []; // 실패 시 빈 리스트로 초기화
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  // 2. 유저 검색 함수
+  // 1. 유저 검색
   Future<void> searchUser(String nickname, String token) async {
     _isLoading = true;
-    _errorMessage = null;
     notifyListeners();
-
     try {
       _searchResults = await _friendService.searchUser(nickname, token);
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
       _searchResults = [];
     } finally {
       _isLoading = false;
@@ -52,21 +33,43 @@ class FriendProvider with ChangeNotifier {
     }
   }
 
-  // 3. 친구 추가 함수
-  Future<bool> addFriend(UserSearchResult user, String token) async {
-    _errorMessage = null;
+  // 2. 친구 추가 요청 보내기
+  Future<bool> requestFriend(int friendUserId, String token) async {
     try {
-      final success = await _friendService.addFriend(user.nickname, token);
-
-      if (success) {
-        // 내 로컬 리스트에도 추가하여 즉시 화면 반영
-        _myFriends.add(user);
-        notifyListeners();
-      }
+      final success = await _friendService.requestFriend(friendUserId, token);
       return success;
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
       return false;
+    }
+  }
+
+  // 3. 내 친구 목록 + 요청 목록 한 번에 가져오기
+  Future<void> fetchAllFriendData(String token) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      // 두 가지 요청을 동시에 보냄
+      final results = await Future.wait([
+        _friendService.getFriends(token),
+        _friendService.getPendingRequests(token),
+      ]);
+
+      _myFriends = results[0] as List<UserSearchResult>;
+      _pendingRequests = results[1] as List<FriendRequestModel>;
+    } catch (e) {
+      print("친구 데이터 로드 실패: $e");
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // 4. 친구 요청 수락
+  Future<void> acceptRequest(int friendshipId, String token) async {
+    final success = await _friendService.acceptFriend(friendshipId, token);
+    if (success) {
+      // 수락 성공하면 목록 다시 불러오기
+      await fetchAllFriendData(token);
     }
   }
 }

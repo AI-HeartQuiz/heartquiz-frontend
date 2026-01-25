@@ -19,7 +19,10 @@ class _FriendSelectScreenState extends State<FriendSelectScreen> {
   @override
   void initState() {
     super.initState();
-    _loadFriends();
+    // "화면 먼저 다 그리고 나서(Build 후에)" 데이터 불러오기
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadFriends();
+    });
   }
 
   @override
@@ -34,7 +37,7 @@ class _FriendSelectScreenState extends State<FriendSelectScreen> {
     final token = authProvider.accessToken;
 
     if (token != null) {
-      await friendProvider.fetchFriends(token);
+      await friendProvider.fetchAllFriendData(token);
     }
   }
 

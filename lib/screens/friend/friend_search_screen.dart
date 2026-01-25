@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:heartquiz/widgets/friend_widgets.dart';
-import 'package:heartquiz/widgets/home_widgets.dart';
 
 class FriendSearchScreen extends StatefulWidget {
   const FriendSearchScreen({super.key});
@@ -97,17 +96,6 @@ class _FriendSearchScreenState extends State<FriendSearchScreen> {
             ),
           ],
         ),
-      ),
-      // 하단 네비게이션 바
-      bottomNavigationBar: HomeBottomNavBar(
-        currentIndex: 2, // '내 정보' 탭 하위 메뉴이므로 2번 유지
-        onTap: (index) {
-          if (index == 0) {
-            Navigator.pushReplacementNamed(context, '/home');
-          } else if (index == 2) {
-            Navigator.pop(context); // 현재 화면 닫고 프로필로 복귀
-          }
-        },
       ),
     );
   }

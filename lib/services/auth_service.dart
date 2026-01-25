@@ -6,7 +6,7 @@ import '../models/user_model.dart';
 /// 백엔드와의 실제 HTTP 통신을 처리합니다.
 class AuthService {
   // 백엔드 주소 (에뮬레이터 사용 시 10.0.2.2 사용 권장)
-  final String baseUrl = 'http://172.16.96.200:8080/api/auth';
+  final String baseUrl = 'http://10.0.2.2:8080/api/auth';
 
   /// 회원가입 API 호출
   ///
@@ -72,7 +72,9 @@ class AuthService {
   Future<Map<String, dynamic>?> getUserProfile(String token) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/users/me'),
+        Uri.parse(
+          'http://10.0.2.2:8080/api/users/me',
+        ), // 기존의 baseurl로 받아왔는데 그럼 /auth까지 포함되버림 -> 수정필요
         headers: {
           'Authorization': 'Bearer $token', // Bearer 토큰 인증
           'Content-Type': 'application/json',

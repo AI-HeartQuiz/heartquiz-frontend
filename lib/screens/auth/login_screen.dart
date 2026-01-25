@@ -86,7 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const Text(
                   '서로를 더 깊이 알아가는 시간',
-                  style: TextStyle(fontSize: 14, color: Color(0xFF886364)),
+                  style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
                 ),
                 const SizedBox(height: 48),
 
@@ -105,20 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   isPassword: true,
                   controller: _passwordController,
                 ),
-
-                // Align(
-                //   alignment: Alignment.centerRight,
-                //   child: TextButton(
-                //     onPressed: () {
-                //       // 비밀번호 찾기 로직 (필요 시 구현)
-                //     },
-                //     child: const Text(
-                //       '비밀번호를 잊으셨나요?',
-                //       style: TextStyle(color: Colors.grey, fontSize: 13),
-                //     ),
-                //   ),
-                // ),
-                // const SizedBox(height: 24),
+                const SizedBox(height: 40),
 
                 // 로딩 상태 반영
                 PrimaryButton(
@@ -139,7 +126,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: () => Navigator.pushNamed(context, '/signup'),
                       child: const Text(
                         '회원가입',
-                        style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF12C49D)),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF12C49D),
+                        ),
                       ),
                     ),
                   ],

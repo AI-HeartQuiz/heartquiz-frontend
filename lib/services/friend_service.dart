@@ -1,15 +1,20 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:heartquiz/models/friend_model.dart'; // 모델 임포트
+import 'package:heartquiz/models/friend_model.dart';
 
 class FriendService {
-  final String baseUrl = 'http://localhost:8080/api';
+  // IP 주소는 본인 환경에 맞게 유지
+  final String baseUrl = 'http://10.0.2.2:8080/api/friends';
+  final String searchUrl = 'http://10.0.2.2:8080/api/auth/search';
 
-  // 1. 닉네임으로 유저 검색 (GET)
-  Future<List<UserSearchResult>> searchUser(String nickname, String token) async {
+  // 1. 유저 검색 (검색 결과에 ID가 포함되어야 함)
+  Future<List<UserSearchResult>> searchUser(
+    String nickname,
+    String token,
+  ) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/users/search?nickname=$nickname'),
+        Uri.parse('$searchUrl?nickname=$nickname'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -19,46 +24,40 @@ class FriendService {
       if (response.statusCode == 200) {
         final Map<String, dynamic> decodedData = jsonDecode(response.body);
         final List<dynamic> userList = decodedData['data'];
-
         return userList.map((json) => UserSearchResult.fromJson(json)).toList();
       } else {
-        final errorData = jsonDecode(response.body);
-        throw Exception(errorData['error']?['message'] ?? '유저 검색에 실패했습니다.');
+        throw Exception('유저 검색 실패');
       }
     } catch (e) {
+      print('에러 발생: $e');
       rethrow;
     }
   }
 
-  // 2. 친구 추가 요청 (POST)
-  Future<bool> addFriend(String nickname, String token) async {
+  // 2. 친구 추가 요청 (POST /api/friends/request)
+  Future<bool> requestFriend(int friendUserId, String token) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/friends'),
+        Uri.parse('$baseUrl/request'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
-        // 서버 API 명세에 따라 'nickname' 또는 'friendNickname' 등으로 키값을 맞춰주세요.
-        body: jsonEncode({'nickname': nickname}),
+        // ★ 백엔드 DTO(FriendRequest)의 필드명인 'friendUserId'에 맞춰야 함
+        body: jsonEncode({'friendUserId': friendUserId}),
       );
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return true;
-      } else {
-        final errorData = jsonDecode(response.body);
-        throw Exception(errorData['error']?['message'] ?? '친구 추가에 실패했습니다.');
-      }
+      return response.statusCode == 200;
     } catch (e) {
       rethrow;
     }
   }
 
-  // 3. 내 친구 목록 가져오기 (GET)
+  // 3. 내 친구 목록 조회
   Future<List<UserSearchResult>> getFriends(String token) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/friends'),
+        Uri.parse(baseUrl),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -67,16 +66,60 @@ class FriendService {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> decodedData = jsonDecode(response.body);
-        final List<dynamic> friendList = decodedData['data'];
+        final List<dynamic> list = decodedData['data'];
 
-        // 서버에서 받은 리스트 데이터를 모델 객체 리스트로 변환
-        return friendList.map((json) => UserSearchResult.fromJson(json)).toList();
-      } else {
-        final errorData = jsonDecode(response.body);
-        throw Exception(errorData['error']?['message'] ?? '친구 목록을 가져오지 못했습니다.');
+        // ★ 여기가 핵심! fromJson 대신 fromBackendResponse를 써야 닉네임이 보입니다.
+        return list
+            .map((json) => UserSearchResult.fromBackendResponse(json))
+            .toList();
       }
+      return [];
     } catch (e) {
-      rethrow;
+      return [];
+    }
+  }
+
+  // 4. 받은 친구 요청 목록 조회 (GET /api/friends/requests)
+  Future<List<FriendRequestModel>> getPendingRequests(String token) async {
+    try {
+      // 1. 서버에 GET 요청을 보냅니다. "내 요청 내놔!"
+      // 주소: /api/friends/get/requests (백엔드 Controller랑 일치해야 함)
+      final response = await http.get(
+        Uri.parse('$baseUrl/get/requests'),
+        headers: {
+          'Authorization': 'Bearer $token', // 내 신분증(토큰) 보여주기
+          'Content-Type': 'application/json',
+        },
+      );
+
+      // 2. 서버가 "OK(200)"라고 응답하면?
+      if (response.statusCode == 200) {
+        // 서버가 준 데이터 꾸러미(JSON)를 풉니다.
+        final Map<String, dynamic> decodedData = jsonDecode(response.body);
+        final List<dynamic> list = decodedData['data']; // 진짜 알맹이 데이터 리스트
+
+        // 리스트 안에 있는 JSON 덩어리들을 하나씩 'FriendRequestModel' 객체로 변환합니다.
+        return list.map((json) => FriendRequestModel.fromJson(json)).toList();
+      }
+
+      // 실패하면 빈 리스트 반환
+      return [];
+    } catch (e) {
+      // 에러 나도 빈 리스트 반환 (앱이 죽지 않게)
+      return [];
+    }
+  }
+
+  // 5. 친구 요청 수락 (POST /api/friends/{friendshipId}/accept)
+  Future<bool> acceptFriend(int friendshipId, String token) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/$friendshipId/accept'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
     }
   }
 }

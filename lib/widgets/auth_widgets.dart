@@ -60,6 +60,14 @@ class _AuthTextFieldState extends State<AuthTextField> {
             controller: widget.controller,
             onChanged: widget.onChanged, // 실시간 입력 감지
             obscureText: widget.isPassword ? _isObscured : false,
+            enabled: true,
+            enableInteractiveSelection: true,
+            keyboardType: widget.isPassword
+                ? TextInputType.visiblePassword
+                : TextInputType.emailAddress,
+            textInputAction: widget.isPassword
+                ? TextInputAction.done
+                : TextInputAction.next,
             decoration: InputDecoration(
               hintText: widget.hint,
               hintStyle: const TextStyle(color: Colors.black26, fontSize: 15),
@@ -68,15 +76,16 @@ class _AuthTextFieldState extends State<AuthTextField> {
                   : null,
               suffixIcon: widget.isPassword
                   ? IconButton(
-                icon: Icon(
-                  _isObscured
-                      ? Icons.visibility_off_outlined
-                      : Icons.visibility_outlined,
-                  color: Colors.grey,
-                  size: 20,
-                ),
-                onPressed: () => setState(() => _isObscured = !_isObscured),
-              )
+                      icon: Icon(
+                        _isObscured
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        color: Colors.grey,
+                        size: 20,
+                      ),
+                      onPressed: () =>
+                          setState(() => _isObscured = !_isObscured),
+                    )
                   : null,
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(
@@ -132,17 +141,20 @@ class PrimaryButton extends StatelessWidget {
         ),
         child: isLoading
             ? const SizedBox(
-          width: 24,
-          height: 24,
-          child: CircularProgressIndicator(
-            color: Colors.white,
-            strokeWidth: 2,
-          ),
-        )
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              )
             : Text(
-          text,
-          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-        ),
+                text,
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
       ),
     );
   }
