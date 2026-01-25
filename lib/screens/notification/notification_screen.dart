@@ -78,7 +78,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
             notification.type == 'report_ready') &&
         notification.sessionId != null) {
       final chatProvider = context.read<ChatSessionProvider>();
-      chatProvider.setSessionId(notification.sessionId!.toString());
+      chatProvider.setSessionId(notification.sessionId!);
       final report = await chatProvider.generateReport(token);
 
       if (report != null && mounted) {
@@ -189,6 +189,61 @@ class _NotificationScreenState extends State<NotificationScreen> {
             ),
           );
         },
+      ),
+      bottomNavigationBar: _buildBottomNav(),
+    );
+  }
+
+  Widget _buildBottomNav() {
+    return Container(
+      height: 80,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: Colors.grey.shade100)),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildNavItem(Icons.home, '홈', () {
+                Navigator.pushReplacementNamed(context, '/home');
+              }),
+              _buildNavItem(Icons.history, '기록', () {
+                Navigator.pushReplacementNamed(context, '/record');
+              }),
+              _buildNavItem(Icons.person, '내 정보', () {
+                Navigator.pushReplacementNamed(context, '/profile');
+              }),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem(IconData icon, String label, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 64,
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: Colors.grey.shade400, size: 24),
+            const SizedBox(height: 1),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey.shade400,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

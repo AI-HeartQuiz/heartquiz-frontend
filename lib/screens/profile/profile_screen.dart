@@ -97,7 +97,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: Column(
                           children: [
                             ProfileAvatar(
-                              name: authProvider.nickname ?? '사용자',
+                              name: authProvider.userNickname ?? '사용자',
                               bio: '매일매일 조금씩 성장하는 중 🌱',
                               onEditTap: () {},
                             ),
@@ -119,34 +119,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text(
-                                  '친구 관리',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                TextButton.icon(
-                                  onPressed: () {
-                                    Navigator.pushNamed(
-                                      context,
-                                      '/friend_search',
-                                    ).then((_) => _loadAllData());
-                                  },
-                                  icon: const Icon(Icons.add, size: 18),
-                                  label: const Text('추가'),
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: const Color(0xFF12C49D),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 8,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                            const Text(
+                              '친구 관리',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            FriendAddButton(
+                              onPressed: () {
+                                Navigator.pushNamed(
+                                  context,
+                                  '/friend_search',
+                                ).then((_) => _loadAllData());
+                              },
                             ),
                             const SizedBox(height: 24),
 

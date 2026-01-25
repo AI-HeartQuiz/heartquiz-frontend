@@ -183,23 +183,23 @@ class _FriendSelectScreenState extends State<FriendSelectScreen> {
                 }
 
                 return ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.only(left: 4, bottom: 12),
-                      child: Text(
-                        '내 친구 목록',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF64748B),
-                        ),
-                      ),
+              padding: const EdgeInsets.all(16),
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(left: 4, bottom: 12),
+                  child: Text(
+                    '내 친구 목록',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF64748B),
                     ),
+                  ),
+                ),
                     ...filteredFriends
                         .map((friend) => _buildFriendItem(friend, primaryColor))
                         .toList(),
-                  ],
+              ],
                 );
               },
             ),
@@ -224,16 +224,16 @@ class _FriendSelectScreenState extends State<FriendSelectScreen> {
         child: Consumer<ChatSessionProvider>(
           builder: (context, chatProvider, child) => ElevatedButton(
             onPressed: chatProvider.isLoading ? null : _sendQuestions,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: primaryColor,
-              foregroundColor: Colors.white,
-              minimumSize: const Size(double.infinity, 56),
-              shape: RoundedRectangleBorder(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: primaryColor,
+            foregroundColor: Colors.white,
+            minimumSize: const Size(double.infinity, 56),
+            shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
-              elevation: 8,
-              shadowColor: primaryColor.withOpacity(0.4),
-            ),
+            elevation: 8,
+            shadowColor: primaryColor.withOpacity(0.4),
+          ),
             child: chatProvider.isLoading
                 ? const SizedBox(
                     height: 20,
@@ -244,8 +244,8 @@ class _FriendSelectScreenState extends State<FriendSelectScreen> {
                     ),
                   )
                 : const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
                       Text(
                         '질문 보내기',
                         style: TextStyle(
@@ -253,9 +253,9 @@ class _FriendSelectScreenState extends State<FriendSelectScreen> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(width: 8),
-                      Icon(Icons.send, size: 20),
-                    ],
+              SizedBox(width: 8),
+              Icon(Icons.send, size: 20),
+            ],
                   ),
           ),
         ),

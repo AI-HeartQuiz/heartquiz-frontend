@@ -114,7 +114,7 @@ class _ReportScreenState extends State<ReportScreen> {
                 Builder(
                   builder: (context) {
                     // 내가 A(방장)인지 확인
-                    final bool isUserA = userNickname == report.userAName;
+                    final bool isUserA = (userNickname == report.userAName);
 
                     // 1) 내 카드 내용 준비
                     // 내가 A면 -> 내 생각은 A생각
@@ -148,6 +148,35 @@ class _ReportScreenState extends State<ReportScreen> {
                     );
                   },
                 ),
+
+                const SizedBox(height: 24), // 간격 추가
+                // B가 볼 때: B의 속마음 → A의 속마음 순서
+                // A가 볼 때: A의 속마음 → B의 속마음 순서
+                // if (isUserB) ...[
+                //   // B가 보고 있는 경우
+                //   InnerThoughtCard(
+                //     label: '${partnerName}의 속마음',
+                //     thought: report.bThought,
+                //     isPartner: false,
+                //   ),
+                //   InnerThoughtCard(
+                //     label: '${userNickname ?? '상대방'}의 속마음',
+                //     thought: report.aThought,
+                //     isPartner: true,
+                //   ),
+                // ] else ...[
+                //   // A가 보고 있는 경우
+                //   InnerThoughtCard(
+                //     label: '${userNickname}의 속마음',
+                //     thought: report.aThought,
+                //     isPartner: false,
+                //   ),
+                //   InnerThoughtCard(
+                //     label: '${partnerName ?? '상대방'}의 속마음',
+                //     thought: report.bThought,
+                //     isPartner: true,
+                //   ),
+                // ],
 
                 // 3. AI 중재 메시지 카드
                 // B가 볼 때: aDetailForB (A의 입장을 B에게 보여줄 내용)

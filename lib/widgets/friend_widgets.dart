@@ -149,8 +149,8 @@ class FriendSearchResultCard extends StatelessWidget {
               final iconColor = iconColors[colorIndex];
 
               return Container(
-                width: 56,
-                height: 56,
+            width: 56,
+            height: 56,
                 decoration: BoxDecoration(
                   color: bgColor,
                   shape: BoxShape.circle,
@@ -162,7 +162,7 @@ class FriendSearchResultCard extends StatelessWidget {
                       offset: const Offset(0, 4),
                     ),
                   ],
-                ),
+            ),
                 child: Icon(Icons.person, color: iconColor, size: 36),
               );
             },

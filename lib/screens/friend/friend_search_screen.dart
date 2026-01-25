@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:heartquiz/widgets/friend_widgets.dart';
+import 'package:heartquiz/providers/friend_provider.dart';
+import 'package:heartquiz/models/friend_model.dart';
 
 class FriendSearchScreen extends StatefulWidget {
   const FriendSearchScreen({super.key});
@@ -10,32 +14,45 @@ class FriendSearchScreen extends StatefulWidget {
 
 class _FriendSearchScreenState extends State<FriendSearchScreen> {
   final TextEditingController _searchController = TextEditingController();
-
-  // 가상의 전체 친구 데이터베이스
-  final List<Map<String, String>> _allUsers = [
-    {"name": "민수", "email": "minsu@heartquiz.com"},
-    {"name": "지혜", "email": "jihye@heartquiz.com"},
-    {"name": "철수", "email": "chulsoo@heartquiz.com"},
-  ];
-
-  // 실제 화면에 보여줄 검색 결과 리스트
-  List<Map<String, String>> _searchResults = [];
   bool _hasSearched = false;
 
-  // 검색 실행 함수 (글자가 바뀔 때마다 혹은 엔터를 쳤을 때 실행)
-  void _handleSearch(String query) {
+  // 검색 실행 함수 (서버와 통신)
+  Future<void> _handleSearch(String query) async {
+    // 1. 검색어가 비어있으면 초기화
+    if (query.trim().isEmpty) {
+      setState(() {
+        _hasSearched = false;
+      });
+      return;
+    }
+
+    // 2. 키보드 내리기
+    FocusScope.of(context).unfocus();
+
     setState(() {
-      if (query.trim().isEmpty) {
-        _searchResults = [];
-        _hasSearched = false; // 검색어가 없으면 '이름을 검색해보세요' 상태로 복구
-      } else {
-        _hasSearched = true;
-        // 이름에 검색어가 포함된 유저 필터링 (대소문자 구분 없이)
-        _searchResults = _allUsers
-            .where((user) => user['name']!.contains(query))
-            .toList();
-      }
+      _hasSearched = true;
     });
+
+    // 3. 토큰 가져오기
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('accessToken') ?? '';
+
+    if (token.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('로그인 정보가 없습니다. 다시 로그인해주세요.')),
+        );
+      }
+      return;
+    }
+
+    // 4. Provider를 통해 서버에 검색 요청
+    if (mounted) {
+      await Provider.of<FriendProvider>(
+        context,
+        listen: false,
+      ).searchUser(query, token);
+    }
   }
 
   @override
@@ -46,6 +63,9 @@ class _FriendSearchScreenState extends State<FriendSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Provider의 상태를 지켜보다가 데이터가 바뀌면 화면을 다시 그림
+    final friendProvider = Provider.of<FriendProvider>(context);
+
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7F7),
       body: SafeArea(
@@ -63,8 +83,7 @@ class _FriendSearchScreenState extends State<FriendSearchScreen> {
               child: FriendSearchBar(
                 hintText: '닉네임을 입력해 주세요',
                 controller: _searchController,
-                onSubmitted: _handleSearch, // 키보드에서 엔터/체크 클릭 시
-                //onChanged: _handleSearch,   // 타이핑할 때마다 실시간 검색
+                onSubmitted: _handleSearch,
               ),
             ),
 
@@ -89,7 +108,7 @@ class _FriendSearchScreenState extends State<FriendSearchScreen> {
                     ),
 
                     // 조건별 UI 렌더링
-                    Expanded(child: _buildSearchResultContent()),
+                    Expanded(child: _buildSearchResultContent(friendProvider)),
                   ],
                 ),
               ),
@@ -100,20 +119,37 @@ class _FriendSearchScreenState extends State<FriendSearchScreen> {
     );
   }
 
-  // 검색 결과에 따른 내부 콘텐츠 위젯
-  Widget _buildSearchResultContent() {
-    // 1. 아직 검색을 시작하지 않았을 때
+  // 검색 결과 내용을 그리는 위젯
+  Widget _buildSearchResultContent(FriendProvider provider) {
+    // 1. 로딩 중이면 로딩 표시
+    if (provider.isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFF12C49D)),
+      );
+    }
+
+    // 2. 아직 검색 안 했으면 안내 문구
     if (!_hasSearched) {
       return const Center(
         child: Text(
-          '친구의 이름을 검색해보세요.',
+          '친구의 닉네임을 검색해보세요.',
           style: TextStyle(color: Colors.grey, fontSize: 14),
         ),
       );
     }
 
-    // 2. 검색 결과가 없을 때
-    if (_searchResults.isEmpty) {
+    // 3. 에러가 났으면 에러 메시지 표시
+    if (provider.errorMessage != null) {
+      return Center(
+        child: Text(
+          provider.errorMessage!,
+          style: const TextStyle(color: Colors.redAccent),
+        ),
+      );
+    }
+
+    // 4. 검색 결과가 없으면
+    if (provider.searchResults.isEmpty) {
       return const Center(
         child: Text(
           '검색 결과가 없습니다.',
@@ -122,27 +158,47 @@ class _FriendSearchScreenState extends State<FriendSearchScreen> {
       );
     }
 
-    // 3. 검색 결과가 있을 때 (리스트 뷰)
+    // 5. 검색 결과가 있을 때 (리스트 뷰)
     return ListView.builder(
       physics: const BouncingScrollPhysics(),
-      itemCount: _searchResults.length,
+      itemCount: provider.searchResults.length,
       itemBuilder: (context, index) {
-        final user = _searchResults[index];
+        final UserSearchResult user = provider.searchResults[index];
+
         return FriendSearchResultCard(
-          name: user['name']!,
-          email: user['email']!,
+          name: user.nickname,
+          email: user.email,
           onAddTap: () {
-            // 친구 추가 완료 메시지 띄우기
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('${user['name']}님이 친구로 추가되었습니다.'),
-                behavior: SnackBarBehavior.floating,
-                duration: const Duration(seconds: 2),
-              ),
-            );
+            _addFriend(user);
           },
         );
       },
     );
+  }
+
+  // 친구 추가 버튼 눌렀을 때 실행할 함수
+  Future<void> _addFriend(UserSearchResult user) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('accessToken') ?? '';
+
+    if (!mounted) return;
+
+    // Provider의 requestFriend 호출
+    final success = await Provider.of<FriendProvider>(
+      context,
+      listen: false,
+    ).requestFriend(user.id, token);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            success ? '${user.nickname}님이 친구로 추가되었습니다.' : '친구 추가 실패',
+          ),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 }

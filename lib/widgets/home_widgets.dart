@@ -277,8 +277,8 @@ class HomeBottomNavBar extends StatelessWidget {
           children: [
             // 선택되었을 때 FILL(채워진 아이콘)을 사용합니다.
             Icon(
-              isSelected ? selectedIcon : unselectedIcon,
-              color: color,
+                isSelected ? selectedIcon : unselectedIcon,
+                color: color,
               size: 26,
             ),
             const SizedBox(height: 4),

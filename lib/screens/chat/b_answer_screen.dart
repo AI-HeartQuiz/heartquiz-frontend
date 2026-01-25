@@ -4,6 +4,7 @@ import 'package:heartquiz/widgets/chat_widgets.dart';
 import 'package:heartquiz/providers/chat_session_provider.dart';
 import 'package:heartquiz/providers/auth_provider.dart';
 import 'package:heartquiz/models/chat_model.dart';
+import 'package:heartquiz/screens/report/report_loading_screen.dart';
 
 /// B가 질문 5개에 답변하는 화면 (챗봇 UI)
 class BAnswerScreen extends StatefulWidget {
@@ -115,8 +116,14 @@ class _BAnswerScreenState extends State<BAnswerScreen> {
     final success = await chatProvider.submitBAnswers(token);
 
     if (success && mounted) {
-      // 리포트 생성 화면으로 이동
-      Navigator.pushReplacementNamed(context, '/report');
+      // 답변 제출 성공 시 리포트 생성 로딩 화면으로 이동
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              ReportLoadingScreen(sessionId: widget.sessionId),
+        ),
+      );
     } else if (mounted) {
       _showError(chatProvider.errorMessage ?? '답변 제출에 실패했습니다.');
     }

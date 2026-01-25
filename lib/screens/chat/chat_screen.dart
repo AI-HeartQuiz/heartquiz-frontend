@@ -38,7 +38,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
   /// 질문지 생성 함수
   Future<void> _generateQuestions() async {
-    final chatProvider = context.read<ChatSessionProvider>();
     final authProvider = context.read<AuthProvider>();
     final token = authProvider.accessToken;
 
@@ -47,16 +46,9 @@ class _ChatScreenState extends State<ChatScreen> {
       return;
     }
 
-    final response = await chatProvider.generateQuestions(
-      token,
-      authProvider.nickname ?? 'user',
-    );
-
-    if (response != null && mounted) {
-      // 질문 로딩 화면으로 이동
+    // 즉시 로딩 화면으로 이동 (API 호출은 로딩 화면에서 수행)
+    if (mounted) {
       Navigator.pushNamed(context, '/question_loading');
-    } else if (mounted) {
-      _showError(chatProvider.errorMessage ?? '질문지 생성에 실패했습니다.');
     }
   }
 

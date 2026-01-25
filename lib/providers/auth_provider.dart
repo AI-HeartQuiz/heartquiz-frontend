@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart'; // ★ [추가] 이
 ///
 /// [관리하는 상태]
 /// - _accessToken: 로그인/회원가입 시 받은 JWT 토큰
-/// - _nickname: 현재 로그인한 사용자의 닉네임
+/// - _userNickname: 현재 로그인한 사용자의 닉네임
 /// - _isLoading: API 호출 중인지 여부
 /// - _errorMessage: 에러 발생 시 에러 메시지
 class AuthProvider with ChangeNotifier {
@@ -25,7 +25,6 @@ class AuthProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   String? get userNickname => _userNickname;
-  String? get nickname => _userNickname; // 하위 호환성을 위한 별칭 (UX/UI 개선 유지)
   String? get accessToken => _accessToken;
   bool get isAuthenticated => _accessToken != null; // 로그인 여부 확인
 

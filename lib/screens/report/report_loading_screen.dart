@@ -3,14 +3,16 @@ import 'package:provider/provider.dart';
 import 'package:heartquiz/providers/chat_session_provider.dart';
 import 'package:heartquiz/providers/auth_provider.dart';
 
-class QuestionLoadingScreen extends StatefulWidget {
-  const QuestionLoadingScreen({super.key});
+class ReportLoadingScreen extends StatefulWidget {
+  final String sessionId;
+
+  const ReportLoadingScreen({super.key, required this.sessionId});
 
   @override
-  State<QuestionLoadingScreen> createState() => _QuestionLoadingScreenState();
+  State<ReportLoadingScreen> createState() => _ReportLoadingScreenState();
 }
 
-class _QuestionLoadingScreenState extends State<QuestionLoadingScreen>
+class _ReportLoadingScreenState extends State<ReportLoadingScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _progressAnimation;
@@ -34,11 +36,11 @@ class _QuestionLoadingScreenState extends State<QuestionLoadingScreen>
     // 애니메이션 시작
     _controller.forward();
 
-    // 질문지 생성 시작
-    _generateQuestions();
+    // 리포트 생성 시작
+    _generateReport();
   }
 
-  Future<void> _generateQuestions() async {
+  Future<void> _generateReport() async {
     final chatProvider = context.read<ChatSessionProvider>();
     final authProvider = context.read<AuthProvider>();
     final token = authProvider.accessToken;
@@ -51,15 +53,15 @@ class _QuestionLoadingScreenState extends State<QuestionLoadingScreen>
       return;
     }
 
+    // 세션 ID 설정
+    chatProvider.setSessionId(widget.sessionId);
+
     try {
       // 실제 API 호출
-      final response = await chatProvider.generateQuestions(
-        token,
-        authProvider.userNickname ?? 'user',
-      );
+      final report = await chatProvider.generateReport(token);
 
       // API 완료 후 로딩바가 100%에 도달했는지 확인
-      if (response != null && mounted) {
+      if (report != null && mounted) {
         // 5초가 지나지 않았으면 기다림
         if (_controller.value < 1.0) {
           await _controller.animateTo(1.0);
@@ -67,18 +69,18 @@ class _QuestionLoadingScreenState extends State<QuestionLoadingScreen>
 
         // 다음 화면으로 이동
         if (mounted) {
-          Navigator.pushReplacementNamed(context, '/question_send');
+          Navigator.pushReplacementNamed(context, '/report');
         }
       } else if (mounted) {
         setState(() {
-          _errorMessage = chatProvider.errorMessage ?? '질문지 생성에 실패했습니다.';
+          _errorMessage = chatProvider.errorMessage ?? '리포트 생성에 실패했습니다.';
         });
         _controller.stop();
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage = '질문지 생성 중 오류가 발생했습니다.';
+          _errorMessage = '리포트 생성 중 오류가 발생했습니다.';
         });
         _controller.stop();
       }
@@ -139,7 +141,7 @@ class _QuestionLoadingScreenState extends State<QuestionLoadingScreen>
 
                   // 텍스트 정보
                   const Text(
-                    '두 분을 위한 특별한 질문을\n생성하고 있어요',
+                    '두 분의 대화를 분석하여\n이해 리포트를 생성하고 있어요',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 20,
@@ -203,7 +205,7 @@ class _QuestionLoadingScreenState extends State<QuestionLoadingScreen>
             ],
             border: Border.all(color: const Color(0xFFF8FAFC), width: 4),
           ),
-          child: Icon(Icons.smart_toy, size: 70, color: primaryColor),
+          child: Icon(Icons.psychology, size: 70, color: primaryColor),
         ),
         // 반짝이는 별 아이콘 (상단 우측)
         Positioned(
@@ -241,7 +243,7 @@ class _QuestionLoadingScreenState extends State<QuestionLoadingScreen>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Generating...',
+                  'Analyzing...',
                   style: TextStyle(
                     color: primaryColor,
                     fontSize: 12,
@@ -285,7 +287,7 @@ class _QuestionLoadingScreenState extends State<QuestionLoadingScreen>
             ),
             const SizedBox(height: 12),
             const Text(
-              '대화 기록을 분석하여 맞춤 질문을 만들고 있습니다.',
+              '답변을 분석하여 맞춤 리포트를 생성하고 있습니다.',
               style: TextStyle(color: Color(0xFF94A3B8), fontSize: 11),
             ),
           ],

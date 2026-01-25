@@ -2,25 +2,17 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/user_model.dart';
 
-/// 인증 관련 API 호출을 담당하는 서비스 클래스
-/// 백엔드와의 실제 HTTP 통신을 처리합니다.
 class AuthService {
   // 백엔드 주소 (에뮬레이터 사용 시 10.0.2.2 사용 권장)
   final String baseUrl = 'http://10.0.2.2:8080/api/auth';
 
-  /// 회원가입 API 호출
-  ///
-  /// [API 엔드포인트] POST /api/auth/register
-  /// [요청 바디] { "email": string, "password": string, "nickname": string }
-  /// [응답 형식] { "access_token": string, "nickname": string } 또는 { "data": { ... } }
-  /// [성공 코드] 200, 201
-  /// [실패 시] Exception을 throw하며, error.message에 에러 메시지가 포함됩니다.
   Future<AuthResponse?> register(RegisterRequest request) async {
     try {
       final response = await http.post(
+        // 서버에 보내기
         Uri.parse('$baseUrl/register'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(request.toJson()),
+        body: jsonEncode(request.toJson()), // toJson은 Json형식으로 보내기
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -35,13 +27,6 @@ class AuthService {
     }
   }
 
-  /// 로그인 API 호출
-  ///
-  /// [API 엔드포인트] POST /api/auth/login
-  /// [요청 바디] { "email": string, "password": string }
-  /// [응답 형식] { "access_token": string, "nickname": string } 또는 { "data": { ... } }
-  /// [성공 코드] 200
-  /// [실패 시] Exception을 throw하며, error.message에 에러 메시지가 포함됩니다.
   Future<AuthResponse?> login(LoginRequest request) async {
     try {
       final response = await http.post(
@@ -61,14 +46,6 @@ class AuthService {
     }
   }
 
-  /// 사용자 프로필 조회 API 호출
-  ///
-  /// [API 엔드포인트] GET /api/auth/users/me
-  /// [인증 헤더] Authorization: Bearer {token}
-  /// [응답 형식] { "data": { "nickname": string } } 또는 { "nickname": string }
-  /// [성공 코드] 200
-  /// [실패 시] Exception을 throw하며, error.message에 에러 메시지가 포함됩니다.
-  ///          (401 Unauthorized 등)
   Future<Map<String, dynamic>?> getUserProfile(String token) async {
     try {
       final response = await http.get(
