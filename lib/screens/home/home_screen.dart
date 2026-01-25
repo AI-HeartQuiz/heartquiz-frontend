@@ -74,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (token == null) return;
 
     // 세션 ID를 설정하고 리포트를 생성
-    chatProvider.setSessionId(sessionId);
+    chatProvider.setSessionId(sessionId.toString());
     final report = await chatProvider.generateReport(token);
 
     if (report != null && mounted) {

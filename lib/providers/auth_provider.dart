@@ -24,6 +24,7 @@ class AuthProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   String? get nickname => _nickname;
+  String? get userNickname => _nickname; // 백엔드 친구 코드 호환성을 위한 별칭
   String? get accessToken => _accessToken;
   bool get isAuthenticated => _accessToken != null; // 로그인 여부 확인
 

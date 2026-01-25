@@ -26,10 +26,10 @@ class ChatSessionProvider with ChangeNotifier {
   List<FollowUpPair> _followUpPairs = [];
 
   // 현재 세션 ID
-  int? _sessionId;
+  String? _sessionId;
 
   // B에게 전달될 질문 5개
-  List<String> _bQuestions = [];
+  List<QuestionItem> _bQuestions = [];
 
   // B의 답변들
   List<BAnswer> _bAnswers = [];
@@ -47,8 +47,10 @@ class ChatSessionProvider with ChangeNotifier {
   // Getters
   String? get situationText => _situationText;
   List<FollowUpPair> get followUpPairs => _followUpPairs;
-  int? get sessionId => _sessionId;
-  List<String> get bQuestions => _bQuestions;
+  String? get sessionId => _sessionId;
+  List<QuestionItem> get bQuestions => _bQuestions;
+  // UX/UI 호환성을 위한 질문 텍스트 리스트 getter
+  List<String> get bQuestionTexts => _bQuestions.map((q) => q.text).toList();
   List<BAnswer> get bAnswers => _bAnswers;
   ReportModel? get reportData => _reportData;
   List<QuizSessionItem> get quizSessions => _quizSessions;
@@ -86,27 +88,59 @@ class ChatSessionProvider with ChangeNotifier {
   }
 
   /// 세션 ID 설정
-  void setSessionId(int id) {
+  void setSessionId(String id) {
+    // 1. 값이 똑같으면 아무것도 하지 않음 (무한 루프 및 불필요한 렌더링 방지)
+    if (_sessionId == id) return;
+
     _sessionId = id;
-    notifyListeners();
+
+    // 2. 화면 빌드 충돌 방지 (Microtask로 감싸서 실행 순서를 아주 잠시 미룸)
+    Future.microtask(() {
+      notifyListeners();
+    });
   }
 
   /// B에게 전달될 질문 5개 설정
-  void setBQuestions(List<String> questions) {
+  void setBQuestions(List<QuestionItem> questions) {
     _bQuestions = questions;
-    notifyListeners();
+
+    Future.microtask(() {
+      notifyListeners();
+    });
+  }
+
+  /// B에게 전달될 질문 5개 설정 (하위 호환성: String 리스트)
+  void setBQuestionsFromTexts(List<String> questionTexts) {
+    _bQuestions = questionTexts
+        .asMap()
+        .entries
+        .map((e) => QuestionItem(id: e.key, text: e.value))
+        .toList();
+    Future.microtask(() {
+      notifyListeners();
+    });
   }
 
   /// B의 답변 추가/업데이트
   void setBAnswer(int questionIndex, String answer) {
     if (questionIndex >= 0 && questionIndex < _bQuestions.length) {
       final question = _bQuestions[questionIndex];
+
+      // [추가] 질문 ID를 사용하여 답변 객체 생성
+      final newAnswer = BAnswer(
+        questionId: question.id, // 질문 ID 생성
+        text: answer, // 답변 내용
+        role: 'B', // 역할 B 고정
+      );
+
       // 이미 답변이 있으면 업데이트, 없으면 추가
-      final existingIndex = _bAnswers.indexWhere((a) => a.question == question);
+      final existingIndex = _bAnswers.indexWhere(
+        (a) => a.questionId == question.id, // 버그 수정: question.id로 비교
+      );
       if (existingIndex >= 0) {
-        _bAnswers[existingIndex] = BAnswer(question: question, answer: answer);
+        _bAnswers[existingIndex] = newAnswer; // 업데이트
       } else {
-        _bAnswers.add(BAnswer(question: question, answer: answer));
+        _bAnswers.add(newAnswer); // 추가
       }
       notifyListeners();
     }
@@ -125,8 +159,15 @@ class ChatSessionProvider with ChangeNotifier {
 
   /// 로딩 상태 설정
   void setLoading(bool value) {
+    // 1. 값이 같으면 무시 (불필요한 렌더링 방지)
+    if (_isLoading == value) return;
+
     _isLoading = value;
-    notifyListeners();
+
+    // 2. 화면 빌드 충돌 방지 (작업을 아주 잠시 미룸)
+    Future.microtask(() {
+      notifyListeners();
+    });
   }
 
   /// 에러 메시지 설정
@@ -152,11 +193,20 @@ class ChatSessionProvider with ChangeNotifier {
       return null;
     }
 
+    // 1. 세션 ID가 없으면(첫 질문이면) 생성
+    if (_sessionId == null) {
+      // 타임스탬프 기반 ID 생성 (백엔드와 협의된 방식 사용)
+      _sessionId = DateTime.now().millisecondsSinceEpoch.toString();
+      notifyListeners();
+    }
+
     setLoading(true);
     _errorMessage = null;
 
     try {
+      // 2. 수정된 QuizService 호출 (sessionId 필수)
       final question = await _quizService.generateFollowUpQuestion(
+        _sessionId!, // ✅ 수정됨: sessionid -> _sessionId!
         _situationText,
         _followUpPairs,
         token,
@@ -210,16 +260,19 @@ class ChatSessionProvider with ChangeNotifier {
       return null;
     }
 
-    // 세션 ID 생성 (타임스탬프 기반)
-    final sessionId = DateTime.now().millisecondsSinceEpoch;
-    setSessionId(sessionId);
+    // ✅ 수정됨: 꼬리질문 때 만든 세션 ID를 그대로 사용해야 합니다.
+    // 만약 세션 ID가 없다면(예외 상황) 새로 생성
+    if (_sessionId == null) {
+      _sessionId = DateTime.now().millisecondsSinceEpoch.toString();
+      notifyListeners();
+    }
 
     setLoading(true);
     _errorMessage = null;
 
     try {
       final response = await _quizService.generateQuestions(
-        sessionId,
+        _sessionId!, // ✅ 수정됨: 기존 세션 ID 사용
         nickname,
         _situationText!,
         _followUpPairs,
@@ -227,6 +280,7 @@ class ChatSessionProvider with ChangeNotifier {
       );
 
       if (response != null) {
+        setSessionId(response.sessionId);
         setBQuestions(response.questions);
         setLoading(false);
         return response;
@@ -259,7 +313,7 @@ class ChatSessionProvider with ChangeNotifier {
     }
 
     if (friendId <= 0) {
-      _errorMessage = '친구를 선택해주세요.';
+      _errorMessage = '$friendId, 친구를 선택해주세요.';
       notifyListeners();
       return false;
     }
@@ -292,8 +346,11 @@ class ChatSessionProvider with ChangeNotifier {
   /// [사용 시점] 사용자 B가 알림을 통해 질문지를 받았을 때, 질문 목록을 불러올 때
   ///
   /// [반환값] BQuestionsResponse (session_id와 questions 포함), 실패 시 null
-  Future<BQuestionsResponse?> getBQuestions(int sessionId, String token) async {
-    if (sessionId <= 0 || token.isEmpty) {
+  Future<BQuestionsResponse?> getBQuestions(
+    String sessionId,
+    String token,
+  ) async {
+    if (sessionId.isEmpty || token.isEmpty) {
       _errorMessage = '로그인이 필요합니다.';
       notifyListeners();
       return null;
@@ -437,8 +494,11 @@ class ChatSessionProvider with ChangeNotifier {
 
     try {
       _quizSessions = await _quizService.getQuizSessions(token);
+      print("✅ 세션 목록 로드 성공: ${_quizSessions.length}개 가져옴");
+
       setLoading(false);
     } catch (e) {
+      print("🚨 세션 목록 로드 실패 에러: $e");
       _errorMessage = e.toString().replaceFirst('Exception: ', '');
       _quizSessions = [];
       setLoading(false);

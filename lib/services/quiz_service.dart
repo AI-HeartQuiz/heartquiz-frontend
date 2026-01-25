@@ -7,7 +7,7 @@ import 'package:heartquiz/models/session_model.dart';
 /// 퀴즈 관련 API 호출을 담당하는 서비스 클래스
 /// 질문지 생성, 답변 제출, 리포트 생성 등의 백엔드와의 실제 HTTP 통신을 처리합니다.
 class QuizService {
-  final String baseUrl = 'http://localhost:8080/api';
+  final String baseUrl = 'http://10.0.2.2:8080/api';
 
   /// AI가 꼬리질문을 동적으로 생성하는 API 호출
   ///
@@ -20,6 +20,7 @@ class QuizService {
   ///
   /// 초기 상황과 기존 Q/A 쌍을 기반으로 다음 꼬리질문을 생성합니다.
   Future<String?> generateFollowUpQuestion(
+    String sessionId,
     String? situationText,
     List<FollowUpPair> existingPairs,
     String token,
@@ -30,8 +31,9 @@ class QuizService {
         'existing_qa': existingPairs.map((e) => e.toJson()).toList(),
       };
 
+      // ✅ URL 수정: sessions/$sessionId/chat/followup
       final response = await http.post(
-        Uri.parse('$baseUrl/quiz/followup-question'),
+        Uri.parse('$baseUrl/sessions/$sessionId/chat/followup'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -41,7 +43,9 @@ class QuizService {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final jsonData = jsonDecode(response.body);
-        final question = jsonData['data']?['question'] ?? jsonData['question'];
+        // data 안에 question이 있거나, 바로 question이 있거나 처리
+        final data = jsonData['data'] ?? jsonData;
+        final question = data['question'];
         return question?.toString();
       } else {
         final errorData = jsonDecode(response.body);
@@ -70,7 +74,7 @@ class QuizService {
   ///
   /// API 3.1: 질문지 생성 요청
   Future<BQuestionsResponse?> generateQuestions(
-    int sessionId,
+    String sessionId,
     String userAId,
     String situationText,
     List<FollowUpPair> followUpQa,
@@ -78,14 +82,15 @@ class QuizService {
   ) async {
     try {
       final requestBody = {
-        'session_id': sessionId,
+        // session_id는 URL에 들어가므로 Body에서는 빼도 됨 (백엔드 로직에 따라 다름)
         'user_a_id': userAId,
         'situation_text': situationText,
         'followup_qa': followUpQa.map((e) => e.toJson()).toList(),
       };
 
+      // ✅ URL 수정: sessions/$sessionId/questions/generate
       final response = await http.post(
-        Uri.parse('$baseUrl/quiz/generate'),
+        Uri.parse('$baseUrl/sessions/$sessionId/questions/generate'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -119,18 +124,17 @@ class QuizService {
   ///
   /// API 3.3: B의 답변 제출
   Future<bool> submitBAnswers(
-    int sessionId,
+    String sessionId,
     List<BAnswer> answers,
     String token,
   ) async {
     try {
-      final requestBody = {
-        'session_id': sessionId,
-        'answers': answers.map((e) => e.toJson()).toList(),
-      };
+      // 수정: session_id는 URL에 포함되므로 requestBody에서 제거
+      final requestBody = {'answers': answers.map((e) => e.toJson()).toList()};
 
+      // ✅ URL 수정: sessions/$sessionId/answers
       final response = await http.post(
-        Uri.parse('$baseUrl/quiz/answers'),
+        Uri.parse('$baseUrl/sessions/$sessionId/answers'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -141,6 +145,7 @@ class QuizService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         return true;
       } else {
+        print("전송 실패: ${response.body}");
         final errorData = jsonDecode(response.body);
         throw Exception(errorData['error']?['message'] ?? '답변 제출에 실패했습니다.');
       }
@@ -161,10 +166,11 @@ class QuizService {
   /// [실패 시] Exception을 throw하며, error.message에 에러 메시지가 포함됩니다.
   ///
   /// API 3.4: 리포트 생성
-  Future<ReportModel?> generateReport(int sessionId, String token) async {
+  Future<ReportModel?> generateReport(String sessionId, String token) async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/quiz/report?session_id=$sessionId'),
+      // ✅ URL 수정: sessions/$sessionId/report/generate (POST 요청)
+      final response = await http.post(
+        Uri.parse('$baseUrl/sessions/$sessionId/report/generate'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -196,10 +202,14 @@ class QuizService {
   /// [실패 시] Exception을 throw하며, error.message에 에러 메시지가 포함됩니다.
   ///
   /// API 3.2: B의 질문 목록 조회
-  Future<BQuestionsResponse?> getBQuestions(int sessionId, String token) async {
+  Future<BQuestionsResponse?> getBQuestions(
+    String sessionId,
+    String token,
+  ) async {
     try {
+      // ✅ URL 수정: sessions/$sessionId/questions
       final response = await http.get(
-        Uri.parse('$baseUrl/quiz/questions?session_id=$sessionId'),
+        Uri.parse('$baseUrl/sessions/$sessionId/questions'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -232,15 +242,16 @@ class QuizService {
   ///
   /// 세션 ID와 받을 사람(B)의 사용자 ID를 전송합니다.
   Future<bool> sendQuestionsToFriend(
-    int sessionId,
+    String sessionId,
     int friendId,
     String token,
   ) async {
     try {
       final requestBody = {'session_id': sessionId, 'friend_id': friendId};
 
+      // ✅ URL 수정: sessions/$sessionId/invites
       final response = await http.post(
-        Uri.parse('$baseUrl/quiz/send'),
+        Uri.parse('$baseUrl/sessions/$sessionId/invites'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -274,7 +285,7 @@ class QuizService {
   Future<List<QuizSessionItem>> getQuizSessions(String token) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/quiz/sessions'),
+        Uri.parse('$baseUrl/sessions'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',

@@ -48,7 +48,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
         notification.sessionId != null) {
       final chatProvider = context.read<ChatSessionProvider>();
       final questionsResponse = await chatProvider.getBQuestions(
-        notification.sessionId!,
+        notification.sessionId!.toString(),
         token,
       );
 
@@ -57,8 +57,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
           context,
           MaterialPageRoute(
             builder: (context) => BAnswerScreen(
-              sessionId: questionsResponse.sessionId,
-              questions: questionsResponse.questions,
+              sessionId: questionsResponse.sessionId, // 이미 String
+              questions: questionsResponse.questions, // 이미 List<QuestionItem>
             ),
           ),
         );
@@ -78,7 +78,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
             notification.type == 'report_ready') &&
         notification.sessionId != null) {
       final chatProvider = context.read<ChatSessionProvider>();
-      chatProvider.setSessionId(notification.sessionId!);
+      chatProvider.setSessionId(notification.sessionId!.toString());
       final report = await chatProvider.generateReport(token);
 
       if (report != null && mounted) {
