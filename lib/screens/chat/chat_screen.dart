@@ -24,9 +24,10 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     // 화면 진입 시 세션 초기화
+    // (홈 화면과 버튼에서 이미 clearSession()을 호출하므로 여기서는 reset()으로 완전 초기화)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final chatProvider = context.read<ChatSessionProvider>();
-      chatProvider.reset();
+      chatProvider.reset(); // 초기 상황과 꼬리질문도 초기화해야 하므로 reset() 사용
     });
   }
 

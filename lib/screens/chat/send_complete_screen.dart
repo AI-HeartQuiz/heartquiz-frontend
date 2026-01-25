@@ -6,7 +6,9 @@ class SendCompleteScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const Color primaryColor = Color(0xFF12C49D);
-    const String partnerName = "민수";
+    // arguments로 전달된 친구 닉네임 가져오기
+    final String partnerName =
+        ModalRoute.of(context)?.settings.arguments as String? ?? '친구';
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -75,13 +77,19 @@ class SendCompleteScreen extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () {
                   // 히스토리를 모두 지우고 홈으로 이동
-                  Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    '/home',
+                    (route) => false,
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
                   foregroundColor: Colors.white,
                   minimumSize: const Size(double.infinity, 56),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   elevation: 0, // 깔끔하게 그림자 제거 또는 낮춤
                 ),
                 child: const Text(

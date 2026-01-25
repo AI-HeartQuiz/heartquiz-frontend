@@ -461,6 +461,39 @@ class ChatSessionProvider with ChangeNotifier {
     }
   }
 
+  /// 특정 세션 정보 조회 함수
+  ///
+  /// [내부 동작]
+  /// 1. QuizService가 GET /api/sessions/{sessionId} API를 호출하여 세션 정보 조회
+  /// 2. 받은 세션 정보를 QuizSessionItem으로 반환
+  ///
+  /// [사용 시점] 알림 클릭 시 세션 상태를 확인할 때
+  ///
+  /// [반환값] QuizSessionItem (세션 정보), 실패 시 null
+  Future<QuizSessionItem?> fetchSessionInfo(
+    String sessionId,
+    String token,
+  ) async {
+    if (sessionId.isEmpty || token.isEmpty) {
+      _errorMessage = '로그인이 필요합니다.';
+      notifyListeners();
+      return null;
+    }
+
+    setLoading(true);
+    _errorMessage = null;
+
+    try {
+      final sessionInfo = await _quizService.getSessionInfo(sessionId, token);
+      setLoading(false);
+      return sessionInfo;
+    } catch (e) {
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      setLoading(false);
+      return null;
+    }
+  }
+
   /// 퀴즈 세션 목록 조회 함수 (홈 화면용)
   ///
   /// [내부 동작]
@@ -491,6 +524,22 @@ class ChatSessionProvider with ChangeNotifier {
       _quizSessions = [];
       setLoading(false);
     }
+  }
+
+  /// 세션 관련 데이터만 초기화 (완료 후 새로 만들 때 사용)
+  ///
+  /// [내부 동작]
+  /// 세션 ID, 질문 목록, 리포트 데이터를 초기화하여 이전 세션 데이터가 남지 않도록 함
+  ///
+  /// [사용 시점]
+  /// - 홈 화면에 들어올 때
+  /// - 새 질문지 만들기 버튼을 눌렀을 때
+  void clearSession() {
+    _sessionId = null;
+    _bQuestions.clear();
+    _bAnswers.clear();
+    _reportData = null;
+    notifyListeners();
   }
 
   /// 세션 초기화 (테스트용 또는 새 세션 시작 시)

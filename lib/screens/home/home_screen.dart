@@ -19,6 +19,9 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     // 화면이 로드될 때 유저 정보와 세션 목록을 가져옵니다.
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // 홈에 오면 이전 세션 정보는 싹 잊어버리자!
+      final chatProvider = context.read<ChatSessionProvider>();
+      chatProvider.clearSession();
       _loadUserInfo();
       _loadSessions();
     });
@@ -159,6 +162,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: FixedBottomButton(
                     text: '새 질문지 만들기',
                     onPressed: () {
+                      // 새로 만들기를 시작하기 직전에 이전 세션 정보 초기화
+                      final chatProvider = context.read<ChatSessionProvider>();
+                      chatProvider.clearSession();
                       Navigator.pushNamed(context, '/chat');
                     },
                   ),

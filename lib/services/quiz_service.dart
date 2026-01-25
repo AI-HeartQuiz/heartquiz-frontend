@@ -7,7 +7,8 @@ import 'package:heartquiz/models/session_model.dart';
 /// 퀴즈 관련 API 호출을 담당하는 서비스 클래스
 /// 질문지 생성, 답변 제출, 리포트 생성 등의 백엔드와의 실제 HTTP 통신을 처리합니다.
 class QuizService {
-  final String baseUrl = 'http://10.0.2.2:8080/api';
+  final String baseUrl =
+      'https://geitonogamous-aprioristically-king.ngrok-free.dev/api';
 
   /// AI가 꼬리질문을 동적으로 생성하는 API 호출
   ///
@@ -264,6 +265,42 @@ class QuizService {
       } else {
         final errorData = jsonDecode(response.body);
         throw Exception(errorData['error']?['message'] ?? '질문지 전송에 실패했습니다.');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// 특정 세션 정보 조회 API 호출
+  ///
+  /// [API 엔드포인트] GET /api/sessions/{sessionId}
+  /// [인증 헤더] Authorization: Bearer {token}
+  /// [응답 형식] { "data": { ... } } 또는 QuizSessionItem 형식의 JSON 객체
+  ///            session_id, partner_nickname, status 등을 포함합니다.
+  /// [성공 코드] 200
+  /// [실패 시] Exception을 throw하며, error.message에 에러 메시지가 포함됩니다.
+  ///
+  /// 알림 클릭 시 세션 상태를 확인할 때 사용됩니다.
+  Future<QuizSessionItem?> getSessionInfo(
+    String sessionId,
+    String token,
+  ) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/sessions/$sessionId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        final sessionData = jsonData['data'] ?? jsonData;
+        return QuizSessionItem.fromJson(sessionData);
+      } else {
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['error']?['message'] ?? '세션 정보 조회에 실패했습니다.');
       }
     } catch (e) {
       rethrow;
