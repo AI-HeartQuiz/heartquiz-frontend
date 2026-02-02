@@ -7,8 +7,7 @@ import 'package:heartquiz/models/session_model.dart';
 /// 퀴즈 관련 API 호출을 담당하는 서비스 클래스
 /// 질문지 생성, 답변 제출, 리포트 생성 등의 백엔드와의 실제 HTTP 통신을 처리합니다.
 class QuizService {
-  final String baseUrl =
-      'https://geitonogamous-aprioristically-king.ngrok-free.dev/api';
+  final String baseUrl = 'http://10.0.2.2:8080/api';
 
   /// AI가 꼬리질문을 동적으로 생성하는 API 호출
   ///

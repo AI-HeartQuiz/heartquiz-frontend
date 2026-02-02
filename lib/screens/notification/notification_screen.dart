@@ -34,70 +34,19 @@ class _NotificationScreenState extends State<NotificationScreen> {
   Future<void> _handleNotificationTap(NotificationModel notification) async {
     final notificationProvider = context.read<NotificationProvider>();
     final authProvider = context.read<AuthProvider>();
-    final chatProvider = context.read<ChatSessionProvider>();
     final token = authProvider.accessToken;
 
     if (token == null) return;
-
-    // sessionId가 없으면 처리 불가
-    if (notification.sessionId == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('세션 정보가 없습니다.'),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
-      }
-      return;
-    }
 
     // 알림 읽음 처리
     if (!notification.isRead) {
       await notificationProvider.markAsRead(notification.id, token);
     }
 
-    // 1. 세션 정보 최신으로 가져오기
-    final sessionInfo = await chatProvider.fetchSessionInfo(
-      notification.sessionId!,
-      token,
-    );
-
-    if (sessionInfo == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '세션 정보를 불러오는데 실패했습니다: ${chatProvider.errorMessage ?? '알 수 없는 오류'}',
-            ),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
-      }
-      return;
-    }
-
-    // 2. 상태에 따라 화면 이동 분기
-    if (sessionInfo.status == 'COMPLETED') {
-      // 이미 완료된 세션 -> 리포트 화면으로 이동
-      chatProvider.setSessionId(notification.sessionId!);
-      final report = await chatProvider.generateReport(token);
-
-      if (report != null && mounted) {
-        Navigator.pushNamed(context, '/report');
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '리포트를 불러오는데 실패했습니다: ${chatProvider.errorMessage ?? '알 수 없는 오류'}',
-            ),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
-      }
-    } else if (sessionInfo.status == 'QUESTIONS_READY' ||
-        sessionInfo.status == 'ONGOING') {
-      // 답변 대기 중 또는 진행 중 -> 답변 화면으로 이동
+    // 질문지 알림인 경우 B의 답변 화면으로 이동
+    if (notification.type == 'quiz_received' &&
+        notification.sessionId != null) {
+      final chatProvider = context.read<ChatSessionProvider>();
       final questionsResponse = await chatProvider.getBQuestions(
         notification.sessionId!,
         token,
@@ -108,8 +57,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
           context,
           MaterialPageRoute(
             builder: (context) => BAnswerScreen(
-              sessionId: questionsResponse.sessionId,
-              questions: questionsResponse.questions,
+              sessionId: questionsResponse.sessionId, // 이미 String
+              questions: questionsResponse.questions, // 이미 List<QuestionItem>
             ),
           ),
         );
@@ -123,13 +72,24 @@ class _NotificationScreenState extends State<NotificationScreen> {
           ),
         );
       }
-    } else {
-      // 기타 상태 (DRAFT 등)
-      if (mounted) {
+    }
+    // 리포트 완료 알림인 경우 리포트 화면으로 이동
+    else if ((notification.type == 'quiz_answered' ||
+            notification.type == 'report_ready') &&
+        notification.sessionId != null) {
+      final chatProvider = context.read<ChatSessionProvider>();
+      chatProvider.setSessionId(notification.sessionId!);
+      final report = await chatProvider.generateReport(token);
+
+      if (report != null && mounted) {
+        Navigator.pushNamed(context, '/report');
+      } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('아직 준비되지 않은 세션입니다. (상태: ${sessionInfo.status})'),
-            backgroundColor: Colors.orange,
+            content: Text(
+              '리포트를 불러오는데 실패했습니다: ${chatProvider.errorMessage ?? '알 수 없는 오류'}',
+            ),
+            backgroundColor: Colors.redAccent,
           ),
         );
       }

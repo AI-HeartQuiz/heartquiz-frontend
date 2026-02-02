@@ -4,8 +4,7 @@ import '../models/user_model.dart';
 
 class AuthService {
   // 백엔드 주소 (에뮬레이터 사용 시 10.0.2.2 사용 권장)
-  final String baseUrl =
-      'https://geitonogamous-aprioristically-king.ngrok-free.dev/api/auth';
+  final String baseUrl = 'http://10.0.2.2:8080/api/auth';
 
   Future<AuthResponse?> register(RegisterRequest request) async {
     try {
@@ -51,7 +50,7 @@ class AuthService {
     try {
       final response = await http.get(
         Uri.parse(
-          'https://geitonogamous-aprioristically-king.ngrok-free.dev/api/users/me',
+          'http://10.0.2.2:8080/api/users/me',
         ), // 기존의 baseurl로 받아왔는데 그럼 /auth까지 포함되버림 -> 수정필요
         headers: {
           'Authorization': 'Bearer $token', // Bearer 토큰 인증
